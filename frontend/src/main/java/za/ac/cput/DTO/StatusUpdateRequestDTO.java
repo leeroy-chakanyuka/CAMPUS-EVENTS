@@ -1,4 +1,5 @@
 package src.main.java.za.ac.cput.DTO;
 
-public class StatusUpdateRequestDTO {
+public class +
+StatusUpdateRequestDTO {
 }
