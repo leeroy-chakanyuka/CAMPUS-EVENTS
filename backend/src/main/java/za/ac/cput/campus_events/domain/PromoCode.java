@@ -41,7 +41,7 @@ public class PromoCode {
     @Column(nullable = false)
     private LocalDateTime createdAt;
 
-    protected PromoCode() {
+    public PromoCode() {
     }
 
     private PromoCode(Builder builder) {

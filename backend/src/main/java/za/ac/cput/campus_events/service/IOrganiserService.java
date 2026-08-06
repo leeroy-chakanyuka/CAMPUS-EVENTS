@@ -9,7 +9,7 @@ import za.ac.cput.campus_events.domain.Event;
 import java.util.List;
 import java.util.Optional;
 
-public interface IOrganiserService {
+public interface IOrganiserService extends Iservice<Organiser, Long> {
     Organiser save(Organiser organiser);
     Optional<Organiser> findById(Long id);
     List<Organiser> findAll();
