@@ -242,7 +242,7 @@ public class Register extends JFrame {
 
             HttpClient client = HttpClient.newHttpClient();
             HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create(BASE_URL + "/auth/register"))
+                    .uri(URI.create(BASE_URL + "/api/auth/register"))
                     .header("Content-Type", "application/json")
                     .POST(HttpRequest.BodyPublishers.ofString(MAPPER.writeValueAsString(register)))
                     .build();

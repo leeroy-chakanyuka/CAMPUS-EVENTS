@@ -30,6 +30,7 @@ public class Organiser {
 
     @OneToMany(mappedBy = "organiser", fetch = FetchType.LAZY)
     private List<Event> events;
+    private String password;
 
     protected Organiser() {}
 
@@ -43,10 +44,9 @@ public class Organiser {
         this.faculty   = builder.faculty;
         // we'll create an addEvent method so for now just init
         this.events = new ArrayList<>();
+        this.password = builder.password;
     }
 
-    // immutable status change — same id, everything else copied as-is, only
-    // `active` differs. Save the result and JPA updates the existing row.
     public Organiser(Organiser existing, boolean active) {
         this.id        = existing.id;
         this.firstName = existing.firstName;
@@ -83,6 +83,10 @@ public class Organiser {
                 '}';
     }
 
+    public String getPassword() {
+        return this.password;
+    }
+
     public static class Builder {
         private Long          id;
         private String        firstName;
@@ -92,6 +96,12 @@ public class Organiser {
         private LocalDateTime createdAt;
         private Faculty        faculty;
         private List<Event>   events;
+        private String password;
+        
+        public Builder setPassword(String password){
+            this.password = password;
+            return this;
+        }
 
 
         public Builder setFirstName(String firstName) {

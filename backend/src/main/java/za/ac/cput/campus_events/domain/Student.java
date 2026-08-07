@@ -80,6 +80,10 @@ public class Student {
         return faculty;
     }
 
+    public String getPassword() {
+        return password;
+    }
+
     public static class Builder {
 
         private String firstName;

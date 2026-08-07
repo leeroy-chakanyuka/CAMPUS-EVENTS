@@ -158,7 +158,7 @@ public class Login extends JFrame {
             HttpClient client = HttpClient.newHttpClient();
 
             HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create(BASE_URL + "/auth/login"))
+                    .uri(URI.create(BASE_URL + "/api/auth/login"))
                     .header("Content-Type", "application/json")
                     .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
                     .build();

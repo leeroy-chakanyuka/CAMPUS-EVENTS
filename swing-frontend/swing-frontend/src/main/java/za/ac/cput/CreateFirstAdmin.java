@@ -156,7 +156,7 @@ public class CreateFirstAdmin extends JFrame {
             }
 
             JOptionPane.showMessageDialog(this, "Admin account created. Please sign in.");
-            new Login().setVisible(true);
+            new AdminDashboard();
             this.dispose();
 
         } catch (Exception ex) {

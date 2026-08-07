@@ -1,4 +1,4 @@
-package za.ac.cput.View;
+package za.ac.cput;
 
 import javax.swing.*;
 import java.awt.*;
@@ -22,7 +22,7 @@ public class AdminDashboard extends JFrame {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
         setLayout(new BorderLayout());
-
+        setResizable(false);
         createHeader();
         createNavigation();
         createContent();

@@ -1,4 +1,7 @@
 package za.ac.cput.DTO;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+@JsonIgnoreProperties(ignoreUnknown = true)
 
 public class LoginRequestDTO {
     private String role;

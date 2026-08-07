@@ -1,8 +1,12 @@
 package za.ac.cput.campus_events.service;
+import za.ac.cput.campus_events.domain.Admin;
+import za.ac.cput.campus_events.domain.Organiser;
+import za.ac.cput.campus_events.domain.Student;
+import za.ac.cput.campus_events.repository.AdminRepository;
 import za.ac.cput.campus_events.service.EmailService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import za.ac.cput.campus_events.DTO.RegisterRequestDTO;
+import za.ac.cput.campus_events.DTO.*;
 import za.ac.cput.campus_events.DTO.RegisterResponseDTO;
 import za.ac.cput.campus_events.DTO.ResendRequestDTO;
 import za.ac.cput.campus_events.DTO.VerifyRequestDTO;
@@ -12,6 +16,7 @@ import za.ac.cput.campus_events.repository.OrganiserRepository;
 import za.ac.cput.campus_events.repository.PendingRegistrationRepository;
 import za.ac.cput.campus_events.repository.StudentRepository;
 import java.time.LocalDateTime;
+import java.util.Optional;
 import java.util.Random;
 
 @Service
@@ -21,16 +26,18 @@ public class AuthService {
     private final StudentRepository studentRepository;
     private final OrganiserRepository organiserRepository;
     private final EmailService emailService;
+    private final AdminRepository adminRepository;
 
     @Autowired
     public AuthService(PendingRegistrationRepository pendingRegistrationRepository,
                        StudentRepository studentRepository,
-                       OrganiserRepository organiserRepository,EmailService emailService) {
+                       OrganiserRepository organiserRepository, EmailService emailService, AdminRepository adminRepository) {
 
         this.pendingRegistrationRepository = pendingRegistrationRepository;
         this.studentRepository = studentRepository;
         this.organiserRepository = organiserRepository;
         this.emailService = emailService;
+        this.adminRepository = adminRepository;
     }
 
     /**
@@ -114,6 +121,7 @@ public class AuthService {
 
         response.setSuccess(true);
         response.setMessage("Registration successful. Please verify your account.");
+        response.setUuid(pendingRegistration.getUuid());
         return response;
     }
 
@@ -222,5 +230,97 @@ public class AuthService {
     private String generatePin() {
         Random random = new Random();
         return String.format("%06d", random.nextInt(1000000));
+    }
+
+    public LoginResponseDTO login(LoginRequestDTO request) {
+        LoginResponseDTO response = new LoginResponseDTO();
+
+        if (request == null || request.getEmail() == null || request.getEmail().isBlank()
+                || request.getPassword() == null || request.getPassword().isBlank()
+                || request.getRole() == null || request.getRole().isBlank()) {
+            response.setSuccess(false);
+            response.setMessage("Invalid login request.");
+            return response;
+        }
+
+        String role = request.getRole().toUpperCase();
+        String email = request.getEmail();
+        String rawPassword = request.getPassword();
+
+        // Depending on role, query the correct repository
+        if ("STUDENT".equals(role)) {
+            Optional<Student> optional = studentRepository.findByEmail(email);
+            if (optional.isEmpty()) {
+                response.setSuccess(false);
+                response.setMessage("Student account not found.");
+                return response;
+            }
+            Student student = optional.get();
+            if (!student.getPassword().equals(rawPassword)) {
+                response.setSuccess(false);
+                response.setMessage("Incorrect password.");
+                return response;
+            }
+            if (!student.isActive()) {
+                response.setSuccess(false);
+                response.setMessage("Account is disabled.");
+                return response;
+            }
+            response.setSuccess(true);
+            response.setMessage("Login successful.");
+            response.setAccountId(student.getId());
+            response.setRole("STUDENT");
+            return response;
+        }
+
+        if ("ORGANISER".equals(role)) {
+            Optional<Organiser> optional = organiserRepository.findByEmail(email);
+            if (optional.isEmpty()) {
+                response.setSuccess(false);
+                response.setMessage("Organiser account not found.");
+                return response;
+            }
+            Organiser organiser = optional.get();
+            if (!organiser.getPassword().equals(rawPassword)) {
+                response.setSuccess(false);
+                response.setMessage("Incorrect password.");
+                return response;
+            }
+            if (!organiser.isActive()) {
+                response.setSuccess(false);
+                response.setMessage("Account is disabled.");
+                return response;
+            }
+            response.setSuccess(true);
+            response.setMessage("Login successful.");
+            response.setAccountId(organiser.getId());
+            response.setRole("ORGANISER");
+            return response;
+        }
+
+        if ("ADMIN".equals(role)) {
+            Optional<Admin> optional = adminRepository.findByEmail(email);
+            if (optional.isEmpty()) {
+                response.setSuccess(false);
+                response.setMessage("Admin account not found.");
+                return response;
+            }
+            Admin admin = optional.get();
+            if (!admin.getPassword().equals(rawPassword)) {
+                response.setSuccess(false);
+                response.setMessage("Incorrect password.");
+                return response;
+            }
+
+            response.setSuccess(true);
+            response.setMessage("Login successful.");
+            response.setAccountId(admin.getId());
+            response.setRole("ADMIN");
+            return response;
+        }
+
+        response.setSuccess(false);
+        response.setMessage("Unsupported role.");
+        return response;
     }
 }
