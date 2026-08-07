@@ -59,15 +59,33 @@ public class Organiser {
         this.active    = active;
     }
 
-    public Long          getId()        { return id; }
-    public String        getFirstName() { return firstName; }
-    public String        getLastName()  { return lastName; }
-    public String        getEmail()     { return email; }
-    public String        getRole()      { return role; }
-    public LocalDateTime getCreatedAt() { return createdAt; }
-    public List<Event>   getEvents()    { return events; }
-    public boolean       isActive()     { return active; }
-    public Faculty        getFaculty()  { return faculty; }
+    public Long getId(){
+        return id;
+    }
+    public String getFirstName() {
+        return firstName;
+    }
+    public String getLastName()  {
+        return lastName;
+    }
+    public String getEmail() {
+        return email;
+    }
+    public String getRole() {
+        return role;
+    }
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+    public List<Event> getEvents() {
+        return events;
+    }
+    public boolean isActive(){
+        return active;
+    }
+    public Faculty getFaculty(){
+        return faculty;
+    }
 
     @Override
     public String toString() {
@@ -120,6 +138,7 @@ public class Organiser {
         }
 
         public Organiser build() {
+
             return new Organiser(this);
         }
     }
