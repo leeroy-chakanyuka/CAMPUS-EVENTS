@@ -72,9 +72,11 @@ public class OrganiserService implements IOrganiserService {
                     "Cannot create event — organiser is suspended");
         }
 
-        Faculty faculty = facultyRepository.findById(organiser.getFacultyId())
-                .orElseThrow(() -> new RuntimeException(
-                        "Faculty not found for organiser: " + organiserId));
+        Faculty faculty = organiser.getFaculty();
+        if (faculty == null) {
+            throw new RuntimeException(
+                    "Faculty not found for organiser: " + organiserId);
+        }
 
         if (!faculty.isActive()) {
             throw new RuntimeException(
@@ -95,9 +97,11 @@ public class OrganiserService implements IOrganiserService {
                     "Cannot update event — organiser is suspended");
         }
 
-        Faculty faculty = facultyRepository.findById(organiser.getFacultyId())
-                .orElseThrow(() -> new RuntimeException(
-                        "Faculty not found for organiser: " + organiserId));
+        Faculty faculty = organiser.getFaculty();
+        if (faculty == null) {
+            throw new RuntimeException(
+                    "Faculty not found for organiser: " + organiserId);
+        }
 
         if (!faculty.isActive()) {
             throw new RuntimeException(
@@ -122,7 +126,6 @@ public class OrganiserService implements IOrganiserService {
                 .orElseThrow(() -> new RuntimeException(
                         "Event not found: " + eventId));
 
-        event.closeRegistration();
         eventRepository.save(event);
     }
 
