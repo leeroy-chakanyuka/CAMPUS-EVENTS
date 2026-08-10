@@ -1,8 +1,10 @@
 package za.ac.cput.campus_events.service;
 import za.ac.cput.campus_events.domain.Admin;
+import za.ac.cput.campus_events.domain.Faculty;
 import za.ac.cput.campus_events.domain.Organiser;
 import za.ac.cput.campus_events.domain.Student;
 import za.ac.cput.campus_events.repository.AdminRepository;
+import za.ac.cput.campus_events.repository.FacultyRepository;
 import za.ac.cput.campus_events.service.EmailService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -27,17 +29,20 @@ public class AuthService {
     private final OrganiserRepository organiserRepository;
     private final EmailService emailService;
     private final AdminRepository adminRepository;
+    private final FacultyRepository facultyRepository;
 
     @Autowired
     public AuthService(PendingRegistrationRepository pendingRegistrationRepository,
                        StudentRepository studentRepository,
-                       OrganiserRepository organiserRepository, EmailService emailService, AdminRepository adminRepository) {
+                       OrganiserRepository organiserRepository, EmailService emailService,
+                       AdminRepository adminRepository, FacultyRepository facultyRepository) {
 
         this.pendingRegistrationRepository = pendingRegistrationRepository;
         this.studentRepository = studentRepository;
         this.organiserRepository = organiserRepository;
         this.emailService = emailService;
         this.adminRepository = adminRepository;
+        this.facultyRepository = facultyRepository;
     }
 
     /**
@@ -98,7 +103,6 @@ public class AuthService {
 
         String pin = generatePin();
 
-
         PendingRegistration pendingRegistration =
                 new PendingRegistration.Builder()
                         .setEmail(request.getEmail())
@@ -108,9 +112,6 @@ public class AuthService {
                         .setStudentNumber(request.getStudentNumber())
                         .setPin(pin)
                         .build();
-
-        pendingRegistrationRepository.save(pendingRegistration);
-
 
         pendingRegistrationRepository.save(pendingRegistration);
 
@@ -127,7 +128,8 @@ public class AuthService {
 
     /**
      * Step 2:
-     * Verify PIN.
+     * Verify PIN, then create the real Student or Organiser account
+     * from the PendingRegistration data.
      */
     public VerifyResponseDTO verify(VerifyRequestDTO request) {
 
@@ -165,10 +167,45 @@ public class AuthService {
             return response;
         }
 
-        /*
-         * TODO
-         * Create Student or Organiser account here.
-         */
+        String role = pendingRegistration.getRole().toUpperCase();
+
+        // Resolve the faculty, if one was supplied at registration time
+        Faculty faculty = null;
+        if (pendingRegistration.getFacultyId() != null) {
+            faculty = facultyRepository.findById(pendingRegistration.getFacultyId()).orElse(null);
+            if (faculty == null) {
+                response.setSuccess(false);
+                response.setMessage("Faculty not found.");
+                return response;
+            }
+        }
+
+        // NOTE: PendingRegistration doesn't currently capture firstName/lastName,
+        // so these will be null on the created account until that's added upstream.
+        if ("STUDENT".equals(role)) {
+            Student student = new Student.Builder()
+                    .setEmail(pendingRegistration.getEmail())
+                    .setPassword(pendingRegistration.getPassword())
+                    .setStudentNumber(pendingRegistration.getStudentNumber())
+                    .setFaculty(faculty)
+                    .build();
+            studentRepository.save(student);
+
+        } else if ("ORGANISER".equals(role)) {
+            Organiser organiser = new Organiser.Builder()
+                    .setEmail(pendingRegistration.getEmail())
+                    .setPassword(pendingRegistration.getPassword())
+                    .setRole(role)
+                    .setFaculty(faculty)
+                    .setCreatedAt(LocalDateTime.now())
+                    .build();
+            organiserRepository.save(organiser);
+
+        } else {
+            response.setSuccess(false);
+            response.setMessage("Unsupported role for account creation.");
+            return response;
+        }
 
         pendingRegistrationRepository.delete(pendingRegistration);
 
@@ -213,7 +250,6 @@ public class AuthService {
         pendingRegistration.setPin(newPin);
         pendingRegistration.setExpiresAt(LocalDateTime.now().plusMinutes(10));
 
-        pendingRegistrationRepository.save(pendingRegistration);
         pendingRegistrationRepository.save(pendingRegistration);
 
         emailService.sendVerificationEmail(
