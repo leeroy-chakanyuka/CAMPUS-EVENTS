@@ -1,6 +1,7 @@
 package za.ac.cput.campus_events.service;
 
 import org.springframework.stereotype.Service;
+import za.ac.cput.campus_events.DTO.FacultyRequestDTO;
 import za.ac.cput.campus_events.domain.Faculty;
 import za.ac.cput.campus_events.repository.FacultyRepository;
 
@@ -50,6 +51,20 @@ public class FacultyService implements IFacultyService {
         // }
     }
 
+    @Override
+    public List<Faculty> findByStatus(String status) {
+        return List.of();
+    }
+
+    @Override
+    public Faculty createFaculty(FacultyRequestDTO dto, Long adminId) {
+        return null;
+    }
+
+    @Override
+    public void updateFacultyStatus(Long facultyId, boolean active, Long adminId) {
+
+    }
 
     @Override
     public <T> T create(T t) {

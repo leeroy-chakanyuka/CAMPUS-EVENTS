@@ -117,4 +117,8 @@ public class AdminDashboard extends JFrame {
     public JButton getBtnLogout() {
         return btnLogout;
     }
+
+    public static void main(String[] args) {
+        new AdminDashboard();
+    }
 }

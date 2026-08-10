@@ -1,6 +1,7 @@
 package za.ac.cput.campus_events.service;
 import za.ac.cput.campus_events.domain.Admin;
 import za.ac.cput.campus_events.domain.Faculty;
+import za.ac.cput.campus_events.factory.AdminFactory;
 import za.ac.cput.campus_events.domain.Organiser;
 import za.ac.cput.campus_events.domain.Student;
 import za.ac.cput.campus_events.repository.AdminRepository;
@@ -74,6 +75,12 @@ public class AuthService {
             return response;
         }
 
+        if (adminRepository.existsByEmail(request.getEmail())) {
+            response.setSuccess(false);
+            response.setMessage("An admin account with this email already exists.");
+            return response;
+        }
+
         // Check if there is already a pending registration
         // If the previous registration has expired, it automatically deletes it and lets the user register again.
         PendingRegistration existingPending =
@@ -105,6 +112,8 @@ public class AuthService {
 
         PendingRegistration pendingRegistration =
                 new PendingRegistration.Builder()
+                        .setFirstName(request.getFirstName())
+                        .setLastName(request.getLastName())
                         .setEmail(request.getEmail())
                         .setPassword(request.getPassword())
                         .setRole(request.getRole())
@@ -180,26 +189,52 @@ public class AuthService {
             }
         }
 
-        // NOTE: PendingRegistration doesn't currently capture firstName/lastName,
-        // so these will be null on the created account until that's added upstream.
         if ("STUDENT".equals(role)) {
             Student student = new Student.Builder()
+                    .setFirstName(pendingRegistration.getFirstName())
+                    .setLastName(pendingRegistration.getLastName())
                     .setEmail(pendingRegistration.getEmail())
                     .setPassword(pendingRegistration.getPassword())
                     .setStudentNumber(pendingRegistration.getStudentNumber())
                     .setFaculty(faculty)
                     .build();
-            studentRepository.save(student);
+            Student savedStudent = studentRepository.save(student);
+            response.setAccountId(savedStudent.getId());
 
         } else if ("ORGANISER".equals(role)) {
             Organiser organiser = new Organiser.Builder()
+                    .setFirstName(pendingRegistration.getFirstName())
+                    .setLastName(pendingRegistration.getLastName())
                     .setEmail(pendingRegistration.getEmail())
                     .setPassword(pendingRegistration.getPassword())
                     .setRole(role)
                     .setFaculty(faculty)
                     .setCreatedAt(LocalDateTime.now())
                     .build();
-            organiserRepository.save(organiser);
+            Organiser savedOrganiser = organiserRepository.save(organiser);
+            response.setAccountId(savedOrganiser.getId());
+
+        } else if ("ADMIN".equals(role)) {
+            Admin admin = AdminFactory.createAdmin(
+                    pendingRegistration.getFirstName(),
+                    pendingRegistration.getLastName(),
+                    pendingRegistration.getEmail(),
+                    pendingRegistration.getPassword());
+
+            if (admin == null) {
+                response.setSuccess(false);
+                response.setMessage("Invalid admin details.");
+                return response;
+            }
+
+            if (adminRepository.existsByEmail(admin.getEmail())) {
+                response.setSuccess(false);
+                response.setMessage("Admin account already exists.");
+                return response;
+            }
+
+            Admin savedAdmin = adminRepository.save(admin);
+            response.setAccountId(savedAdmin.getId());
 
         } else {
             response.setSuccess(false);
@@ -247,13 +282,14 @@ public class AuthService {
         String newPin = generatePin();
 
         // Update the existing registration
-        pendingRegistration.setPin(newPin);
-        pendingRegistration.setExpiresAt(LocalDateTime.now().plusMinutes(10));
+        PendingRegistration updatedPendingRegistration = pendingRegistration
+            .withPin(newPin)
+            .withExpiresAt(LocalDateTime.now().plusMinutes(10));
 
-        pendingRegistrationRepository.save(pendingRegistration);
+        pendingRegistrationRepository.save(updatedPendingRegistration);
 
         emailService.sendVerificationEmail(
-                pendingRegistration.getEmail(),
+            updatedPendingRegistration.getEmail(),
                 newPin
         );
 
