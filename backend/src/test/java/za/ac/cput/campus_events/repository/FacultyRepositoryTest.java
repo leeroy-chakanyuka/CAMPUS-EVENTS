@@ -1,14 +1,11 @@
 package za.ac.cput.campus_events.repository;
-/*
-Dikgale Mologadi
-student no: 231016263
- */
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import za.ac.cput.campus_events.domain.Faculty;
+import za.ac.cput.campus_events.domain.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -27,12 +24,16 @@ class FacultyRepositoryTest {
 
     @BeforeEach
     void setUp() {
+        Admin admin = new Admin.Builder()
+                .setFirstName("System")
+                .setLastName("Administrator")
+                .setEmail("admin@cput.ac.za")
+                .build();
+
         faculty = new Faculty.Builder()
                 .setName("Faculty of Engineering")
-                .setStatus("ACTIVE")
-                .setContactEmail("engineering@cput.ac.za")
-                .setCreatedByAdminId(1L)
-                .setCreatedAt(LocalDateTime.now())
+                .setEmail("engineering@cput.ac.za")
+                .setCreatedByAdmin(admin)
                 .build();
     }
 
@@ -74,20 +75,6 @@ class FacultyRepositoryTest {
         verify(facultyRepository, times(1)).deleteById(1L);
     }
 
-    @Test
-    void testFindByStatus_ActiveStatus_ShouldReturnList() {
-        when(facultyRepository.findByStatus("ACTIVE")).thenReturn(List.of(faculty));
-        List<Faculty> result = facultyRepository.findByStatus("ACTIVE");
-        assertNotNull(result);
-        assertEquals(1, result.size());
-        assertEquals("ACTIVE", result.get(0).getStatus());
-    }
 
-    @Test
-    void testFindByStatus_InactiveStatus_ShouldReturnEmptyList() {
-        when(facultyRepository.findByStatus("INACTIVE")).thenReturn(List.of());
-        List<Faculty> result = facultyRepository.findByStatus("INACTIVE");
-        assertNotNull(result);
-        assertEquals(0, result.size());
-    }
+
 }

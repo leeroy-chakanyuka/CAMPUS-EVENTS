@@ -9,11 +9,11 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-public class VenueService implements IVenueService {
+public class VeneuService implements IVenueService {
 
     private final VenueRepository venueRepository;
-
-    public VenueService(VenueRepository venueRepository) {
+    
+    public VeneuService(VenueRepository venueRepository) {
         this.venueRepository = venueRepository;
     }
 

@@ -17,8 +17,9 @@ public class Faculty {
     private Long id;
 
     private String name;
-    private String status;
     private String contactEmail;
+
+    private boolean active = true; // new faculties start active
 
     @ManyToOne
     @JoinColumn(name = "created_by_admin_id")
@@ -32,9 +33,17 @@ public class Faculty {
 
     private Faculty(Builder builder) {
         this.name = builder.name;
-        this.status = builder.status;
         this.contactEmail = builder.contactEmail;
         this.createdByAdmin = builder.createdByAdmin;
+    }
+
+    public Faculty(Faculty existing, boolean active) {
+        this.id = existing.id;
+        this.name = existing.name;
+        this.contactEmail = existing.contactEmail;
+        this.createdByAdmin = existing.createdByAdmin;
+        this.createdAt = existing.createdAt;
+        this.active = active;
     }
 
     public Long getId() {
@@ -43,8 +52,8 @@ public class Faculty {
     public String getName() {
         return name;
     }
-    public String getStatus() {
-        return status;
+    public boolean isActive() {
+        return active;
     }
     public String getContactEmail() {
         return contactEmail;
@@ -58,16 +67,11 @@ public class Faculty {
 
     public static class Builder {
         private String name;
-        private String status;
         private String contactEmail;
         private Admin createdByAdmin;
 
         public Builder setName(String name) {
             this.name = name;
-            return this;
-        }
-        public Builder setStatus(String status) {
-            this.status = status;
             return this;
         }
         public Builder setEmail(String contactEmail) {
@@ -84,12 +88,13 @@ public class Faculty {
         }
     }
 
+
     @Override
     public String toString() {
         return "Faculty{" +
                 "id="                + id               +
                 ", name='"           + name             + '\'' +
-                ", status='"         + status           + '\'' +
+                ", active="          + active           +
                 ", contactEmail='"   + contactEmail     + '\'' +
                 ", createdByAdmin="  + createdByAdmin   +
                 ", createdAt="       + createdAt         +

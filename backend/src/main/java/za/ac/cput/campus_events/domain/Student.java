@@ -17,6 +17,8 @@ public class Student {
 
     private boolean isVerified = false; // we dont want to expose this to the builder, only the Admin
 
+    private boolean active = true; // new students start active
+
     @ManyToOne
     @JoinColumn(name = "faculty_id")
     private Faculty faculty; // link this with faculty class later
@@ -27,6 +29,20 @@ public class Student {
         this.lastName = builder.lastName;
         this.email = builder.email;
         this.studentNumber = builder.studentNumber;
+    }
+
+    // immutable status change — same id, everything else copied as-is, only
+    // `active` differs. Save the result and JPA updates the existing row.
+    public Student(Student existing, boolean active) {
+        this.id = existing.id;
+        this.firstName = existing.firstName;
+        this.lastName = existing.lastName;
+        this.email = existing.email;
+        this.studentNumber = existing.studentNumber;
+        this.password = existing.password;
+        this.isVerified = existing.isVerified;
+        this.faculty = existing.faculty;
+        this.active = active;
     }
 
     public Student() {
@@ -54,6 +70,10 @@ public class Student {
 
     public boolean isVerified() {
         return isVerified;
+    }
+
+    public boolean isActive() {
+        return active;
     }
 
     public Faculty getFaculty() {
@@ -113,6 +133,7 @@ public class Student {
                 ", email='" + email + '\'' +
                 ", studentNumber='" + studentNumber + '\'' +
                 ", isVerified=" + isVerified +
+                ", active=" + active +
                 ", faculty=" + faculty +
                 '}';
     }

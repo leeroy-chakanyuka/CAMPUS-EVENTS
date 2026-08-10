@@ -1,8 +1,4 @@
 package za.ac.cput.campus_events.service;
-/*
-Mologadi Dikgale
-Student No: 231016263
- */
 
 import org.springframework.stereotype.Service;
 import za.ac.cput.campus_events.domain.Faculty;
@@ -17,6 +13,7 @@ public class FacultyService implements IFacultyService {
     private final FacultyRepository facultyRepository;
 
     public FacultyService(FacultyRepository facultyRepository) {
+
         this.facultyRepository = facultyRepository;
     }
 
@@ -41,7 +38,37 @@ public class FacultyService implements IFacultyService {
     }
 
     @Override
-    public List<Faculty> findByStatus(String status) {
-        return facultyRepository.findByStatus(status);
+    public void deactivate(Long facultyId) {
+        // Optional<Faculty> facultyOptional = facultyRepository.findById(facultyId);
+
+        // if (facultyOptional.isPresent()) {
+        //     Faculty faculty = facultyOptional.get();
+        //     faculty.setStatus("Inactive");
+        //     facultyRepository.save(faculty);
+        // } else {
+        //     throw new RuntimeException("Faculty not found with id: " + facultyId);
+        // }
     }
+
+
+    @Override
+    public <T> T create(T t) {
+        return null;
+    }
+
+    @Override
+    public <T> T read(Long id) {
+        return null;
+    }
+
+    @Override
+    public <T> T update(T t) {
+        return null;
+    }
+
+    @Override
+    public <T> void delete(T t) {
+
+    }
+
 }

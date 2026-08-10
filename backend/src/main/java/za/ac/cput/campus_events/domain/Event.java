@@ -56,18 +56,6 @@ public class Event {
 
     }
 
-    public void closeRegistration() {
-    }
-
-    public void setOrganiser(Organiser organiser) {
-    }
-
-    public void setCapacity(int i) {
-    }
-
-
-    public void setOpen(boolean b) {
-    }
 
     // Builder Pattern
     public static class Builder {

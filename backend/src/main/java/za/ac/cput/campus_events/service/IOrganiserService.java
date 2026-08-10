@@ -14,8 +14,15 @@ public interface IOrganiserService extends Iservice<Organiser, Long> {
     Optional<Organiser> findById(Long id);
     List<Organiser> findAll();
     void deleteById(Long id);
+
+    // ── Registration ──────────────────────────────────────────────────────
     Organiser registerOrganiser(Organiser organiser, Long facultyId);
+
+    // ── Event management — gate is now isActive(), not verificationStatus ─
     Event createEvent(Long organiserId, Event event);
     Event updateEvent(Long organiserId, Event event);
-    void closeEvent(Long organiserId, Long eventId);
+    void  closeEvent(Long organiserId, Long eventId);
+
+    // ── Status management ─────────────────────────────────────────────────
+    void updateOrganiserStatus(Long organiserId, boolean active, Long requestingAdminId);
 }

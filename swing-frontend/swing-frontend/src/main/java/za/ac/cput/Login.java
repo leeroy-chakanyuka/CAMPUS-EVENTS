@@ -2,8 +2,14 @@ package za.ac.cput;
 
 import javax.swing.*;
 import java.awt.*;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import com.formdev.flatlaf.FlatLightLaf;
-
+import com.fasterxml.jackson.databind.ObjectMapper;
+import za.ac.cput.DTO.LoginRequestDTO;
+import za.ac.cput.DTO.LoginResponseDTO;
 
 public class Login extends JFrame {
 
@@ -21,6 +27,8 @@ public class Login extends JFrame {
     private static final Font FIELD_FONT = new Font("SansSerif", Font.PLAIN, 16);
     private static final Font BUTTON_FONT = new Font("SansSerif", Font.BOLD, 15);
     private static final Font HEADING_FONT = new Font("SansSerif", Font.BOLD, 26);
+    private static final String BASE_URL = "http://localhost:8080";
+    private static final ObjectMapper MAPPER = new ObjectMapper();
 
     public Login() {
         // set up the window
@@ -51,6 +59,8 @@ public class Login extends JFrame {
         pwdPassword.setFont(FIELD_FONT);
         txtIdentifier.setPreferredSize(new Dimension(320, 42));
         pwdPassword.setPreferredSize(new Dimension(320, 42));
+        txtIdentifier.setMaximumSize(new Dimension(320, 42));
+        pwdPassword.setMaximumSize(new Dimension(320, 42));
 
         btnLogin = new JButton("Sign in");
         btnGoRegister = new JButton("Create an account");
@@ -76,22 +86,21 @@ public class Login extends JFrame {
         // FlowLayout.CENTER keeps the three role buttons on one line, centered as a group
         JPanel rolePanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 0));
         rolePanel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        rolePanel.setMaximumSize(new Dimension(500, 54));
         rolePanel.add(btnRoleStudent);
         rolePanel.add(btnRoleOrganiser);
         rolePanel.add(btnRoleAdmin);
 
-        JLabel lblId = new JLabel("Student number / Email");
+        JLabel lblId = new JLabel("Email");
         lblId.setFont(LABEL_FONT);
         lblId.setAlignmentX(Component.CENTER_ALIGNMENT);
-        txtIdentifier.setAlignmentX(Component.CENTER_ALIGNMENT);
-        txtIdentifier.setMaximumSize(new Dimension(320, 42));
 
         JLabel lblPwd = new JLabel("Password");
         lblPwd.setFont(LABEL_FONT);
         lblPwd.setAlignmentX(Component.CENTER_ALIGNMENT);
-        pwdPassword.setAlignmentX(Component.CENTER_ALIGNMENT);
-        pwdPassword.setMaximumSize(new Dimension(320, 42));
 
+        txtIdentifier.setAlignmentX(Component.CENTER_ALIGNMENT);
+        pwdPassword.setAlignmentX(Component.CENTER_ALIGNMENT);
         btnLogin.setAlignmentX(Component.CENTER_ALIGNMENT);
         btnLogin.setMaximumSize(new Dimension(320, 48));
         btnGoRegister.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -120,6 +129,70 @@ public class Login extends JFrame {
         root.add(purplePanel, BorderLayout.WEST);
         root.add(formSide, BorderLayout.CENTER);
         setContentPane(root);
+
+        // link to register screen
+        btnGoRegister.addActionListener(e -> {
+            new Register().setVisible(true);
+            this.dispose();
+        });
+
+        // real login call
+        btnLogin.addActionListener(e -> handleLogin());
+    }
+
+    private String getSelectedRole() {
+        if (btnRoleOrganiser.isSelected()) return "ORGANISER";
+        if (btnRoleAdmin.isSelected()) return "ADMIN";
+        return "STUDENT";
+    }
+
+    private void handleLogin() {
+        try {
+            LoginRequestDTO dto = new LoginRequestDTO();
+            dto.setRole(getSelectedRole());
+            dto.setEmail(txtIdentifier.getText());
+            dto.setPassword(new String(pwdPassword.getPassword()));
+
+            String jsonBody = MAPPER.writeValueAsString(dto);
+
+            HttpClient client = HttpClient.newHttpClient();
+
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(BASE_URL + "/auth/login"))
+                    .header("Content-Type", "application/json")
+                    .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
+                    .build();
+
+            HttpResponse<String> response =
+                    client.send(request, HttpResponse.BodyHandlers.ofString());
+
+            LoginResponseDTO loginResponse =
+                    MAPPER.readValue(response.body(), LoginResponseDTO.class);
+
+            if (loginResponse.isSuccess()) {
+                // TODO: Open dashboard based on loginResponse.getRole()
+                JOptionPane.showMessageDialog(
+                        this,
+                        "Logged in as " + loginResponse.getRole()
+                );
+            } else {
+                JOptionPane.showMessageDialog(
+                        this,
+                        loginResponse.getMessage(),
+                        "Login failed",
+                        JOptionPane.ERROR_MESSAGE
+                );
+                pwdPassword.setText("");
+            }
+
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Could not reach the backend: " + ex.getMessage(),
+                    "Connection error",
+                    JOptionPane.ERROR_MESSAGE
+            );
+        }
     }
 
     public static void main(String[] args) {

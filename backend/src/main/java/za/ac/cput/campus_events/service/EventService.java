@@ -18,28 +18,30 @@ public class EventService implements IEventService {
 
     @Override
     public Event registerStudent(Long eventId) {
-        Optional<Event> optionalEvent = eventRepository.findById(eventId);
-        if (optionalEvent.isPresent()) {
-            Event event = optionalEvent.get();
-            if (event.isOpen() && event.getCapacity() > 0) {
-                event.setCapacity(event.getCapacity() - 1);
-                if (event.getCapacity() == 0) {
-                    event.setOpen(false);
-                }
-                return eventRepository.save(event);
-            }
-        }
-        throw new IllegalStateException("Event not available for registration");
+//        Optional<Event> optionalEvent = eventRepository.findById(eventId);
+//        if (optionalEvent.isPresent()) {
+//            Event event = optionalEvent.get();
+//            if (event.isOpen() && event.getCapacity() > 0) {
+//                event.setCapacity(event.getCapacity() - 1);
+//                if (event.getCapacity() == 0) {
+//                    event.setOpen(false);
+//                }
+//                return eventRepository.save(event);
+//            }
+//        }
+//        throw new IllegalStateException("Event not available for registration");
+        return null;
     }
 
     @Override
     public Event cancelEvent(Long eventId) {
-        Optional<Event> optionalEvent = eventRepository.findById(eventId);
-        if (optionalEvent.isPresent()) {
-            Event event = optionalEvent.get();
-            event.setOpen(false);
-            return eventRepository.save(event);
-        }
-        throw new IllegalStateException("Event not found");
+//        Optional<Event> optionalEvent = eventRepository.findById(eventId);
+//        if (optionalEvent.isPresent()) {
+//            Event event = optionalEvent.get();
+//            event.setOpen(false);
+//            return eventRepository.save(event);
+//        }
+//        throw new IllegalStateException("Event not found");
+        return null;
     }
 }

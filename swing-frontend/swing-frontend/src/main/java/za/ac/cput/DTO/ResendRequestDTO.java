@@ -3,7 +3,7 @@
  * Author: Faith Adams (Student #222297204)
  * Purpose: Carries resend request data from frontend to backend.
  */
-package src.main.java.za.ac.cput.DTO;
+package za.ac.cput.DTO;
 
 public class ResendRequestDTO {
     private String uuid;
