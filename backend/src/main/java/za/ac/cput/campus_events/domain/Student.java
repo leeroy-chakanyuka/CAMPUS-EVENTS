@@ -29,6 +29,7 @@ public class Student {
         this.lastName = builder.lastName;
         this.email = builder.email;
         this.studentNumber = builder.studentNumber;
+        this.password = builder.password;
     }
 
     // immutable status change — same id, everything else copied as-is, only
@@ -78,6 +79,10 @@ public class Student {
 
     public Faculty getFaculty() {
         return faculty;
+    }
+
+    public String getPassword() {
+        return password;
     }
 
     public static class Builder {

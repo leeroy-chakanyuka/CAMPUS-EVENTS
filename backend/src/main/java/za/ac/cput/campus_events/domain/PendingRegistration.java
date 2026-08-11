@@ -13,6 +13,8 @@ public class PendingRegistration {
     @Id
     private String uuid;
 
+    private String firstName;
+    private String lastName;
     private String email;
     private String password;
     private String role;
@@ -30,6 +32,8 @@ public class PendingRegistration {
 
     private PendingRegistration(Builder builder) {
         this.uuid = builder.uuid;
+        this.firstName = builder.firstName;
+        this.lastName = builder.lastName;
         this.email = builder.email;
         this.password = builder.password;
         this.role = builder.role;
@@ -42,6 +46,14 @@ public class PendingRegistration {
 
     public String getUuid() {
         return uuid;
+    }
+
+    public String getFirstName() {
+        return firstName;
+    }
+
+    public String getLastName() {
+        return lastName;
     }
 
     public String getEmail() {
@@ -76,21 +88,38 @@ public class PendingRegistration {
         return createdAt;
     }
 
-    public void setPin(String pin) {
-        this.pin = pin;
+    public PendingRegistration withPin(String pin) {
+        return toBuilder().setPin(pin).build();
     }
 
-    public void setExpiresAt(LocalDateTime expiresAt) {
-        this.expiresAt = expiresAt;
+    public PendingRegistration withExpiresAt(LocalDateTime expiresAt) {
+        return toBuilder().setExpiresAt(expiresAt).build();
     }
 
     public boolean isExpired() {
-        return LocalDateTime.now().isAfter(expiresAt);
+        return expiresAt != null && LocalDateTime.now().isAfter(expiresAt);
+    }
+
+    private Builder toBuilder() {
+        return new Builder()
+                .setUuid(uuid)
+                .setFirstName(firstName)
+                .setLastName(lastName)
+                .setEmail(email)
+                .setPassword(password)
+                .setRole(role)
+                .setFacultyId(facultyId)
+                .setStudentNumber(studentNumber)
+                .setPin(pin)
+                .setExpiresAt(expiresAt)
+                .setCreatedAt(createdAt);
     }
 
     public static class Builder {
 
         private String uuid = UUID.randomUUID().toString();
+        private String firstName;
+        private String lastName;
         private String email;
         private String password;
         private String role;
@@ -102,6 +131,16 @@ public class PendingRegistration {
 
         public Builder setUuid(String uuid) {
             this.uuid = uuid;
+            return this;
+        }
+
+        public Builder setFirstName(String firstName) {
+            this.firstName = firstName;
+            return this;
+        }
+
+        public Builder setLastName(String lastName) {
+            this.lastName = lastName;
             return this;
         }
 
@@ -154,6 +193,8 @@ public class PendingRegistration {
     public String toString() {
         return "PendingRegistration{" +
                 "uuid='" + uuid + '\'' +
+                ", firstName='" + firstName + '\'' +
+                ", lastName='" + lastName + '\'' +
                 ", email='" + email + '\'' +
                 ", role='" + role + '\'' +
                 ", facultyId=" + facultyId +

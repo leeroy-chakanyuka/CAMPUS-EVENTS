@@ -57,10 +57,8 @@ public class CreateFirstAdmin extends JFrame {
         btnCreate.setAlignmentX(Component.CENTER_ALIGNMENT);
         btnCreate.setMaximumSize(new Dimension(ROW_SIZE.width, 44));
 
-        // create image panel
-        JPanel purplePanel = new JPanel();
-        purplePanel.setBackground(new Color(108, 61, 189));
-        purplePanel.setPreferredSize(new Dimension(400, 720));
+        JPanel imagePanel = buildImagePanel();
+        imagePanel.setPreferredSize(new Dimension(400, 720));
 
         // create form panel
         JPanel formSide = new JPanel();
@@ -96,11 +94,37 @@ public class CreateFirstAdmin extends JFrame {
 
         // assemble
         JPanel root = new JPanel(new BorderLayout());
-        root.add(purplePanel, BorderLayout.WEST);
+        root.add(imagePanel, BorderLayout.WEST);
         root.add(formSide, BorderLayout.CENTER);
         setContentPane(root);
 
         btnCreate.addActionListener(e -> handleCreate());
+    }
+
+    private JPanel buildImagePanel() {
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.setBackground(new Color(108, 61, 189));
+        panel.setPreferredSize(new Dimension(400, 720));
+
+        JLabel label = new JLabel();
+        label.setHorizontalAlignment(SwingConstants.CENTER);
+        label.setVerticalAlignment(SwingConstants.CENTER);
+
+        try {
+            java.net.URL imageUrl = getClass().getResource("/za/ac/cput/images/image.png");
+            if (imageUrl != null) {
+                ImageIcon icon = new ImageIcon(imageUrl);
+                Image scaled = icon.getImage().getScaledInstance(320, 320, Image.SCALE_SMOOTH);
+                label.setIcon(new ImageIcon(scaled));
+            } else {
+                label.setText("Image unavailable");
+            }
+        } catch (Exception ex) {
+            label.setText("Image unavailable");
+        }
+
+        panel.add(label, BorderLayout.CENTER);
+        return panel;
     }
 
     private JPanel labeledRow(String labelText, JComponent field) {
@@ -135,7 +159,7 @@ public class CreateFirstAdmin extends JFrame {
             CreateAdminRequestDTO adminRequest = new CreateAdminRequestDTO();
             adminRequest.setFirstName(txtFirstName.getText());
             adminRequest.setLastName(txtLastName.getText());
-            adminRequest.setEmail(txtEmail.getText());   // ← was setPassword(txtEmail.getText())
+            adminRequest.setEmail(txtEmail.getText());
             adminRequest.setPassword(password);
 
             HttpClient client = HttpClient.newHttpClient();
@@ -146,8 +170,7 @@ public class CreateFirstAdmin extends JFrame {
                     .build();
 
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-
-            // ← actually check the response instead of blindly continuing
+            
             CreateAdminResponseDTO dto = MAPPER.readValue(response.body(), CreateAdminResponseDTO.class);
             if (!dto.isSuccess()) {
                 JOptionPane.showMessageDialog(this, "Failed: " + dto.getMessage(),
@@ -155,8 +178,8 @@ public class CreateFirstAdmin extends JFrame {
                 return;
             }
 
-            JOptionPane.showMessageDialog(this, "Admin account created. Please sign in.");
-            new Login().setVisible(true);
+            JOptionPane.showMessageDialog(this, "Admin verification email sent. Enter the OTP to continue.");
+            new Verify(dto.getUuid()).setVisible(true);
             this.dispose();
 
         } catch (Exception ex) {

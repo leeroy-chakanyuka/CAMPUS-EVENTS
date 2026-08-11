@@ -1,8 +1,9 @@
 package za.ac.cput.campus_events.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import za.ac.cput.DTO.CreateAdminResponseDTO;
+import za.ac.cput.campus_events.DTO.CreateAdminResponseDTO;
 import za.ac.cput.campus_events.DTO.CreateAdminRequestDTO;
 import za.ac.cput.campus_events.service.IAdminService;
 
@@ -31,7 +32,8 @@ public class AdminController {
     }
 
     @PutMapping("/change-password")
-    public void changePassword(@RequestParam Long adminId, @RequestParam String currentPassword, @RequestParam String newPassword) {
+    public ResponseEntity<?> changePassword(@RequestParam Long adminId, @RequestParam String currentPassword, @RequestParam String newPassword) {
         adminService.changePassword(adminId, currentPassword, newPassword);
+        return ResponseEntity.ok(Map.of("success", true, "message", "Password changed"));
     }
 }

@@ -7,5 +7,6 @@ import java.util.Optional;
 public interface PendingRegistrationRepository extends JpaRepository<PendingRegistration, String> {
 
     Optional<PendingRegistration> findByEmail(String email);
+    boolean existsByRoleIgnoreCase(String role);
 
 }

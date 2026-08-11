@@ -4,6 +4,9 @@
  * Purpose: Carries verification request data from frontend to backend.
  */
 package za.ac.cput.DTO;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+@JsonIgnoreProperties(ignoreUnknown = true)
 
 public class VerifyRequestDTO {
     private String uuid;

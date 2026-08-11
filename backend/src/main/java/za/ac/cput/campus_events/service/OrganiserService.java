@@ -47,7 +47,6 @@ public class OrganiserService implements IOrganiserService {
         organiserRepository.deleteById(id);
     }
 
-    // ── Register organiser — faculty must exist and be active ─────────────
     @Override
     public Organiser registerOrganiser(Organiser organiser, Long facultyId) {
         Faculty faculty = facultyRepository.findById(facultyId)
@@ -62,7 +61,6 @@ public class OrganiserService implements IOrganiserService {
         return organiserRepository.save(organiser);
     }
 
-    // ── Create event — gate is now isActive() not verificationStatus ──────
     @Override
     public Event createEvent(Long organiserId, Event event) {
         Organiser organiser = organiserRepository.findById(organiserId)
@@ -74,9 +72,11 @@ public class OrganiserService implements IOrganiserService {
                     "Cannot create event — organiser is suspended");
         }
 
-        Faculty faculty = facultyRepository.findById(organiser.getFacultyId())
-                .orElseThrow(() -> new RuntimeException(
-                        "Faculty not found for organiser: " + organiserId));
+        Faculty faculty = organiser.getFaculty();
+        if (faculty == null) {
+            throw new RuntimeException(
+                    "Faculty not found for organiser: " + organiserId);
+        }
 
         if (!faculty.isActive()) {
             throw new RuntimeException(
@@ -86,7 +86,6 @@ public class OrganiserService implements IOrganiserService {
         return eventRepository.save(event);
     }
 
-    // ── Update event — same gate ───────────────────────────────────────────
     @Override
     public Event updateEvent(Long organiserId, Event event) {
         Organiser organiser = organiserRepository.findById(organiserId)
@@ -98,9 +97,11 @@ public class OrganiserService implements IOrganiserService {
                     "Cannot update event — organiser is suspended");
         }
 
-        Faculty faculty = facultyRepository.findById(organiser.getFacultyId())
-                .orElseThrow(() -> new RuntimeException(
-                        "Faculty not found for organiser: " + organiserId));
+        Faculty faculty = organiser.getFaculty();
+        if (faculty == null) {
+            throw new RuntimeException(
+                    "Faculty not found for organiser: " + organiserId);
+        }
 
         if (!faculty.isActive()) {
             throw new RuntimeException(
@@ -110,7 +111,6 @@ public class OrganiserService implements IOrganiserService {
         return eventRepository.save(event);
     }
 
-    // ── Close event — same gate ───────────────────────────────────────────
     @Override
     public void closeEvent(Long organiserId, Long eventId) {
         Organiser organiser = organiserRepository.findById(organiserId)
@@ -126,11 +126,9 @@ public class OrganiserService implements IOrganiserService {
                 .orElseThrow(() -> new RuntimeException(
                         "Event not found: " + eventId));
 
-        event.closeRegistration();
         eventRepository.save(event);
     }
 
-    // ── Status update — immutable copy constructor pattern ────────────────
     @Override
     public void updateOrganiserStatus(Long organiserId, boolean active,
                                       Long requestingAdminId) {
@@ -144,5 +142,25 @@ public class OrganiserService implements IOrganiserService {
 
         Organiser updated = new Organiser(existing, active);
         organiserRepository.save(updated);
+    }
+
+    @Override
+    public <T> T create(T t) {
+        return null;
+    }
+
+    @Override
+    public <T> T read(Long id) {
+        return null;
+    }
+
+    @Override
+    public <T> T update(T t) {
+        return null;
+    }
+
+    @Override
+    public <T> void delete(T t) {
+
     }
 }

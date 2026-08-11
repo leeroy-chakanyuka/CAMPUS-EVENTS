@@ -4,6 +4,9 @@
  * Purpose: Carries resend request data from frontend to backend.
  */
 package za.ac.cput.DTO;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+@JsonIgnoreProperties(ignoreUnknown = true)
 
 public class ResendRequestDTO {
     private String uuid;

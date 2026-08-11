@@ -26,6 +26,21 @@ public class Admin {
         this.password = builder.password;
     }
 
+    /*
+     * while this was not discussed in class, we noticed that we may need to override the value
+     * of certain variables, but because the class is immutable, there's no setter to do so, a google
+     * search informed us that the pattern to use in that case is the withX pattern as seen at the following 
+     * thread : 
+     */
+    private Admin(Admin existing, String password) {
+        this.id = existing.id;
+        this.firstName = existing.firstName;
+        this.lastName = existing.lastName;
+        this.email = existing.email;
+        this.createdAt = existing.createdAt;
+        this.password = password;
+    }
+
     public Admin(){}
 
     public static class Builder{
@@ -82,6 +97,10 @@ public class Admin {
 
     public String getPassword() {
         return password;
+    }
+
+    public Admin withPassword(String password) {
+        return new Admin(this, password);
     }
 
     @Override

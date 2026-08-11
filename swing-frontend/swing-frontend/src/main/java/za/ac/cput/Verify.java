@@ -7,17 +7,18 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.formdev.flatlaf.FlatLightLaf;
+import za.ac.cput.DTO.RegisterResponseDTO;
+import za.ac.cput.DTO.ResendRequestDTO;
 import za.ac.cput.DTO.VerifyRequestDTO;
 import za.ac.cput.DTO.VerifyResponseDTO;
-import za.ac.cput.DTO.ResendRequestDTO;
-import com.formdev.flatlaf.FlatLightLaf;
 
 public class Verify extends JFrame {
 
     private JPasswordField pinField;
     private JButton submitButton;
     private JButton resendButton;
-    private JLabel messageLabel;
+    private JLabel messageLabel;   // kept for minor info, but major errors use JOptionPane
 
     private static final Font LABEL_FONT = new Font("SansSerif", Font.PLAIN, 14);
     private static final Font FIELD_FONT = new Font("SansSerif", Font.PLAIN, 18);
@@ -31,8 +32,7 @@ public class Verify extends JFrame {
     private static final Dimension ROW_SIZE = new Dimension(LABEL_WIDTH + 10 + FIELD_WIDTH, FIELD_HEIGHT);
     private static final String BASE_URL = "http://localhost:8080";
 
-    // passed in from Register when it opens this screen
-    private final String uuid;
+    private final String uuid;  // passed from Register
 
     public Verify(String uuid) {
         this.uuid = uuid;
@@ -40,14 +40,12 @@ public class Verify extends JFrame {
     }
 
     private void initComponents() {
-        // set up the window — same size as Login and Register
         setTitle("Campus Events - Verify your account");
         setSize(960, 720);
         setResizable(false);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
 
-        // create the components
         pinField = new JPasswordField();
         pinField.setFont(FIELD_FONT);
         pinField.setPreferredSize(FIELD_SIZE);
@@ -71,12 +69,10 @@ public class Verify extends JFrame {
         resendButton.setMaximumSize(new Dimension(ROW_SIZE.width, 36));
         resendButton.setFocusPainted(false);
 
-        // create image panel
-        JPanel purplePanel = new JPanel();
-        purplePanel.setBackground(new Color(108, 61, 189));
-        purplePanel.setPreferredSize(new Dimension(400, 720));
+        JPanel imagePanel = buildImagePanel();
+        imagePanel.setPreferredSize(new Dimension(400, 720));
 
-        // create form panel
+        // Form panel
         JPanel formSide = new JPanel();
         formSide.setLayout(new BoxLayout(formSide, BoxLayout.Y_AXIS));
         formSide.setBorder(BorderFactory.createEmptyBorder(24, 40, 24, 40));
@@ -104,14 +100,39 @@ public class Verify extends JFrame {
         formSide.add(resendButton);
         formSide.add(Box.createVerticalGlue());
 
-        // assemble
         JPanel root = new JPanel(new BorderLayout());
-        root.add(purplePanel, BorderLayout.WEST);
+        root.add(imagePanel, BorderLayout.WEST);
         root.add(formSide, BorderLayout.CENTER);
         setContentPane(root);
 
         submitButton.addActionListener(e -> handleVerify());
         resendButton.addActionListener(e -> handleResend());
+    }
+
+    private JPanel buildImagePanel() {
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.setBackground(new Color(108, 61, 189));
+        panel.setPreferredSize(new Dimension(400, 720));
+
+        JLabel label = new JLabel();
+        label.setHorizontalAlignment(SwingConstants.CENTER);
+        label.setVerticalAlignment(SwingConstants.CENTER);
+
+        try {
+            java.net.URL imageUrl = getClass().getResource("/za/ac/cput/images/image.png");
+            if (imageUrl != null) {
+                ImageIcon icon = new ImageIcon(imageUrl);
+                Image scaled = icon.getImage().getScaledInstance(320, 320, Image.SCALE_SMOOTH);
+                label.setIcon(new ImageIcon(scaled));
+            } else {
+                label.setText("Image unavailable");
+            }
+        } catch (Exception ex) {
+            label.setText("Image unavailable");
+        }
+
+        panel.add(label, BorderLayout.CENTER);
+        return panel;
     }
 
     private JPanel labeledRow(String labelText, JComponent field) {
@@ -137,7 +158,10 @@ public class Verify extends JFrame {
         String pin = new String(pinField.getPassword()).trim();
 
         if (pin.isEmpty()) {
-            messageLabel.setText("Please enter your OTP code.");
+            JOptionPane.showMessageDialog(this,
+                    "Please enter your OTP code.",
+                    "Missing OTP",
+                    JOptionPane.ERROR_MESSAGE);
             return;
         }
 
@@ -149,7 +173,7 @@ public class Verify extends JFrame {
             HttpClient client = HttpClient.newHttpClient();
 
             HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create(BASE_URL + "/auth/verify"))
+                    .uri(URI.create(BASE_URL + "/api/auth/verify"))
                     .header("Content-Type", "application/json")
                     .POST(HttpRequest.BodyPublishers.ofString(
                             mapper.writeValueAsString(dto)))
@@ -158,28 +182,57 @@ public class Verify extends JFrame {
             HttpResponse<String> response =
                     client.send(request, HttpResponse.BodyHandlers.ofString());
 
+            int statusCode = response.statusCode();
+            String responseBody = response.body();
+
+            // Debug logs (optional)
+            System.out.println("Verify HTTP status: " + statusCode);
+            System.out.println("Verify response body: " + responseBody);
+
+            if (statusCode != 200) {
+                JOptionPane.showMessageDialog(this,
+                        "Server error (" + statusCode + "):\n" + responseBody,
+                        "Verification failed",
+                        JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
             VerifyResponseDTO verifyResponse =
-                    mapper.readValue(response.body(), VerifyResponseDTO.class);
+                    mapper.readValue(responseBody, VerifyResponseDTO.class);
 
             if (verifyResponse.isSuccess()) {
-                JOptionPane.showMessageDialog(this,
-                        "Account verified! Please sign in.");
+                String role = verifyResponse.getRole();
+                boolean isAdmin = "ADMIN".equalsIgnoreCase(role);
 
-                new Login().setVisible(true);
+                JOptionPane.showMessageDialog(this,
+                        isAdmin ? "Account verified! Opening the admin dashboard." : "Account verified! Please sign in.",
+                        "Success",
+                        JOptionPane.INFORMATION_MESSAGE);
+                if (isAdmin) {
+                    new AdminDashboard().setVisible(true);
+                } else {
+                    new Login().setVisible(true);
+                }
                 dispose();
             } else {
                 String msg = verifyResponse.getMessage();
+                JOptionPane.showMessageDialog(this,
+                        msg,
+                        "Verification failed",
+                        JOptionPane.ERROR_MESSAGE);
 
+                // If expired, suggest resend (optional extra hint)
                 if ("expired".equalsIgnoreCase(msg)) {
-                    messageLabel.setText(
-                            "Your OTP expired. Click Resend to get a new one.");
-                } else {
-                    messageLabel.setText(msg);
+                    messageLabel.setText("OTP expired. Click Resend for a new one.");
                 }
             }
 
         } catch (Exception ex) {
-            messageLabel.setText("Could not reach the backend.");
+            ex.printStackTrace();
+            JOptionPane.showMessageDialog(this,
+                    "Could not reach the backend.\nError: " + ex.getMessage(),
+                    "Connection error",
+                    JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -191,7 +244,7 @@ public class Verify extends JFrame {
             HttpClient client = HttpClient.newHttpClient();
 
             HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create(BASE_URL + "/auth/resend"))
+                    .uri(URI.create(BASE_URL + "/api/auth/resend"))
                     .header("Content-Type", "application/json")
                     .POST(HttpRequest.BodyPublishers.ofString(
                             mapper.writeValueAsString(dto)))
@@ -200,36 +253,64 @@ public class Verify extends JFrame {
             HttpResponse<String> response =
                     client.send(request, HttpResponse.BodyHandlers.ofString());
 
-            VerifyResponseDTO resendResponse =
-                    mapper.readValue(response.body(), VerifyResponseDTO.class);
+            int statusCode = response.statusCode();
+            String responseBody = response.body();
+
+            System.out.println("Resend HTTP status: " + statusCode);
+            System.out.println("Resend response body: " + responseBody);
+
+            if (statusCode != 200) {
+                JOptionPane.showMessageDialog(this,
+                        "Server error (" + statusCode + "):\n" + responseBody,
+                        "Resend failed",
+                        JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            RegisterResponseDTO resendResponse =
+                    mapper.readValue(responseBody, RegisterResponseDTO.class);
 
             if (resendResponse.isSuccess()) {
-
                 pinField.setText("");
                 messageLabel.setText("New OTP sent! Check your email.");
-                resendButton.setEnabled(false);
 
+                JOptionPane.showMessageDialog(this,
+                        "New OTP sent! Check your email.",
+                        "OTP resent",
+                        JOptionPane.INFORMATION_MESSAGE);
+
+                // Disable button for 30 seconds
+                resendButton.setEnabled(false);
+                resendButton.setText("Resend OTP (wait 30s)");
                 Timer timer = new Timer(30000, e -> {
                     resendButton.setEnabled(true);
                     resendButton.setText("Resend OTP");
                 });
-
                 timer.setRepeats(false);
-                resendButton.setText("Resend OTP (wait 30s)");
                 timer.start();
 
             } else {
-                messageLabel.setText(resendResponse.getMessage());
+                JOptionPane.showMessageDialog(this,
+                        resendResponse.getMessage(),
+                        "Resend failed",
+                        JOptionPane.ERROR_MESSAGE);
             }
 
         } catch (Exception ex) {
-            messageLabel.setText("Could not reach the backend.");
+            ex.printStackTrace();
+            JOptionPane.showMessageDialog(this,
+                    "Could not reach the backend.\nError: " + ex.getMessage(),
+                    "Connection error",
+                    JOptionPane.ERROR_MESSAGE);
         }
     }
 
-
-
     public static void main(String[] args) {
+        try {
+            UIManager.setLookAndFeel(new FlatLightLaf());
+        } catch (UnsupportedLookAndFeelException e) {
+            e.printStackTrace();
+        }
         SwingUtilities.invokeLater(() -> new Verify("test-uuid").setVisible(true));
     }
 }

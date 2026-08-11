@@ -1,7 +1,7 @@
 package za.ac.cput.campus_events.service;
 
 import za.ac.cput.campus_events.DTO.CreateAdminRequestDTO;
-import za.ac.cput.DTO.CreateAdminResponseDTO;
+import za.ac.cput.campus_events.DTO.CreateAdminResponseDTO;
 import za.ac.cput.campus_events.domain.Admin;
 
 import java.util.Optional;

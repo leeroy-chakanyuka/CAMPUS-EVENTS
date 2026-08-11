@@ -1,4 +1,7 @@
-package za.ac.cput.DTO;
+package za.ac.cput.campus_events.DTO;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+@JsonIgnoreProperties(ignoreUnknown = true)
 
 public class LoginResponseDTO {
     private boolean success;
