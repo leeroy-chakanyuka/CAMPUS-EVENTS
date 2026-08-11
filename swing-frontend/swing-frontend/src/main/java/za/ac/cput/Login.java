@@ -140,7 +140,6 @@ public class Login extends JFrame {
 
     private JPanel buildImagePanel() {
         JPanel panel = new JPanel(new BorderLayout());
-        panel.setBackground(new Color(108, 61, 189));
         panel.setPreferredSize(new Dimension(400, 720));
 
         JLabel label = new JLabel();
@@ -151,8 +150,7 @@ public class Login extends JFrame {
             java.net.URL imageUrl = getClass().getResource("/za/ac/cput/images/image.png");
             if (imageUrl != null) {
                 ImageIcon icon = new ImageIcon(imageUrl);
-                Image scaled = icon.getImage().getScaledInstance(320, 320, Image.SCALE_SMOOTH);
-                label.setIcon(new ImageIcon(scaled));
+                label.setIcon(new ImageIcon(icon.getImage()));
             } else {
                 label.setText("Image unavailable");
             }
