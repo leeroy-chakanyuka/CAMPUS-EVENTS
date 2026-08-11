@@ -1,5 +1,7 @@
 package za.ac.cput;
 
+import com.formdev.flatlaf.FlatLightLaf;
+
 import javax.swing.*;
 import java.awt.*;
 
@@ -119,6 +121,11 @@ public class AdminDashboard extends JFrame {
     }
 
     public static void main(String[] args) {
-        new AdminDashboard();
+        try {
+            UIManager.setLookAndFeel(new FlatLightLaf());
+        } catch (UnsupportedLookAndFeelException e) {
+            e.printStackTrace();
+        }
+        SwingUtilities.invokeLater(() -> new AdminDashboard());
     }
 }
