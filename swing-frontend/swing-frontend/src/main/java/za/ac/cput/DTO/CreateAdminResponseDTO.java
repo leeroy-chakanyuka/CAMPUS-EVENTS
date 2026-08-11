@@ -7,6 +7,7 @@ public class CreateAdminResponseDTO {
     private boolean success;
     private String message;
     private Long adminId;
+    private String uuid;
 
     public CreateAdminResponseDTO() {}
 
@@ -22,4 +23,6 @@ public class CreateAdminResponseDTO {
     public void setMessage(String message) { this.message = message; }
     public Long getAdminId() { return adminId; }
     public void setAdminId(Long adminId) { this.adminId = adminId; }
+    public String getUuid() { return uuid; }
+    public void setUuid(String uuid) { this.uuid = uuid; }
 }

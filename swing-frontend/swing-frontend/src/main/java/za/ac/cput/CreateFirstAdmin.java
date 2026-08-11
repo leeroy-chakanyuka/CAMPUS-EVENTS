@@ -159,7 +159,7 @@ public class CreateFirstAdmin extends JFrame {
             CreateAdminRequestDTO adminRequest = new CreateAdminRequestDTO();
             adminRequest.setFirstName(txtFirstName.getText());
             adminRequest.setLastName(txtLastName.getText());
-            adminRequest.setEmail(txtEmail.getText());   // ← was setPassword(txtEmail.getText())
+            adminRequest.setEmail(txtEmail.getText());
             adminRequest.setPassword(password);
 
             HttpClient client = HttpClient.newHttpClient();
@@ -170,8 +170,7 @@ public class CreateFirstAdmin extends JFrame {
                     .build();
 
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-
-            // ← actually check the response instead of blindly continuing
+            
             CreateAdminResponseDTO dto = MAPPER.readValue(response.body(), CreateAdminResponseDTO.class);
             if (!dto.isSuccess()) {
                 JOptionPane.showMessageDialog(this, "Failed: " + dto.getMessage(),
