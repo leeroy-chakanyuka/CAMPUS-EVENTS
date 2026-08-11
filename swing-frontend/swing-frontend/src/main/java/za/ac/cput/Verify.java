@@ -69,10 +69,8 @@ public class Verify extends JFrame {
         resendButton.setMaximumSize(new Dimension(ROW_SIZE.width, 36));
         resendButton.setFocusPainted(false);
 
-        // Purple panel
-        JPanel purplePanel = new JPanel();
-        purplePanel.setBackground(new Color(108, 61, 189));
-        purplePanel.setPreferredSize(new Dimension(400, 720));
+        JPanel imagePanel = buildImagePanel();
+        imagePanel.setPreferredSize(new Dimension(400, 720));
 
         // Form panel
         JPanel formSide = new JPanel();
@@ -103,12 +101,38 @@ public class Verify extends JFrame {
         formSide.add(Box.createVerticalGlue());
 
         JPanel root = new JPanel(new BorderLayout());
-        root.add(purplePanel, BorderLayout.WEST);
+        root.add(imagePanel, BorderLayout.WEST);
         root.add(formSide, BorderLayout.CENTER);
         setContentPane(root);
 
         submitButton.addActionListener(e -> handleVerify());
         resendButton.addActionListener(e -> handleResend());
+    }
+
+    private JPanel buildImagePanel() {
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.setBackground(new Color(108, 61, 189));
+        panel.setPreferredSize(new Dimension(400, 720));
+
+        JLabel label = new JLabel();
+        label.setHorizontalAlignment(SwingConstants.CENTER);
+        label.setVerticalAlignment(SwingConstants.CENTER);
+
+        try {
+            java.net.URL imageUrl = getClass().getResource("/za/ac/cput/images/image.png");
+            if (imageUrl != null) {
+                ImageIcon icon = new ImageIcon(imageUrl);
+                Image scaled = icon.getImage().getScaledInstance(320, 320, Image.SCALE_SMOOTH);
+                label.setIcon(new ImageIcon(scaled));
+            } else {
+                label.setText("Image unavailable");
+            }
+        } catch (Exception ex) {
+            label.setText("Image unavailable");
+        }
+
+        panel.add(label, BorderLayout.CENTER);
+        return panel;
     }
 
     private JPanel labeledRow(String labelText, JComponent field) {
@@ -177,11 +201,18 @@ public class Verify extends JFrame {
                     mapper.readValue(responseBody, VerifyResponseDTO.class);
 
             if (verifyResponse.isSuccess()) {
+                String role = verifyResponse.getRole();
+                boolean isAdmin = "ADMIN".equalsIgnoreCase(role);
+
                 JOptionPane.showMessageDialog(this,
-                        "Account verified! Please sign in.",
+                        isAdmin ? "Account verified! Opening the admin dashboard." : "Account verified! Please sign in.",
                         "Success",
                         JOptionPane.INFORMATION_MESSAGE);
-                new Login().setVisible(true);
+                if (isAdmin) {
+                    new AdminDashboard().setVisible(true);
+                } else {
+                    new Login().setVisible(true);
+                }
                 dispose();
             } else {
                 String msg = verifyResponse.getMessage();

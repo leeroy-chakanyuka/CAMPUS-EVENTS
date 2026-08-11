@@ -6,7 +6,10 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.ArrayList;
+import java.util.List;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.formdev.flatlaf.FlatLightLaf;
 import za.ac.cput.DTO.RegisterRequestDTO;
@@ -25,9 +28,9 @@ public class Register extends JFrame {
     private JTextField txtEmail;
 
     private JTextField txtStudentNumber;
-    private JComboBox<String> cmbFacultyStudent;
+    private JComboBox<FacultyOption> cmbFacultyStudent;
 
-    private JComboBox<String> cmbFacultyOrganiser;
+    private JComboBox<FacultyOption> cmbFacultyOrganiser;
     private JLabel lblPendingNotice;
 
     private JPasswordField pwdPassword;
@@ -78,8 +81,8 @@ public class Register extends JFrame {
         txtLastName = new JTextField();
         txtEmail = new JTextField();
         txtStudentNumber = new JTextField();
-        cmbFacultyStudent = new JComboBox<>(new String[]{"ICT"});
-        cmbFacultyOrganiser = new JComboBox<>(new String[]{"ICT"});
+        cmbFacultyStudent = new JComboBox<>();
+        cmbFacultyOrganiser = new JComboBox<>();
         pwdPassword = new JPasswordField();
         pwdConfirm = new JPasswordField();
 
@@ -88,7 +91,7 @@ public class Register extends JFrame {
             f.setPreferredSize(FIELD_SIZE);
             f.setMaximumSize(FIELD_SIZE);
         }
-        for (JComboBox<String> c : new JComboBox[]{cmbFacultyStudent, cmbFacultyOrganiser}) {
+        for (JComboBox<FacultyOption> c : new JComboBox[]{cmbFacultyStudent, cmbFacultyOrganiser}) {
             c.setFont(FIELD_FONT);
             c.setPreferredSize(FIELD_SIZE);
             c.setMaximumSize(FIELD_SIZE);
@@ -159,12 +162,11 @@ public class Register extends JFrame {
         formSide.add(Box.createVerticalStrut(8));
         formSide.add(btnGoLogin);
 
-        JPanel purplePanel = new JPanel();
-        purplePanel.setBackground(new Color(108, 61, 189));
-        purplePanel.setPreferredSize(new Dimension(400, 720));
+        JPanel imagePanel = buildImagePanel();
+        imagePanel.setPreferredSize(new Dimension(400, 720));
 
         JPanel root = new JPanel(new BorderLayout());
-        root.add(purplePanel, BorderLayout.WEST);
+        root.add(imagePanel, BorderLayout.WEST);
         root.add(formSide, BorderLayout.CENTER);
         setContentPane(root);
 
@@ -174,6 +176,7 @@ public class Register extends JFrame {
         });
 
         btnRegister.addActionListener(e -> handleRegister());
+        loadFaculties();
     }
 
     private JPanel buildStudentFieldsPanel() {
@@ -195,6 +198,62 @@ public class Register extends JFrame {
         panel.add(Box.createVerticalStrut(4));
         panel.add(lblPendingNotice);
         return panel;
+    }
+
+    private JPanel buildImagePanel() {
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.setBackground(new Color(108, 61, 189));
+        panel.setPreferredSize(new Dimension(400, 720));
+
+        JLabel label = new JLabel();
+        label.setHorizontalAlignment(SwingConstants.CENTER);
+        label.setVerticalAlignment(SwingConstants.CENTER);
+
+        try {
+            java.net.URL imageUrl = getClass().getResource("/za/ac/cput/images/image.png");
+            if (imageUrl != null) {
+                ImageIcon icon = new ImageIcon(imageUrl);
+                Image scaled = icon.getImage().getScaledInstance(320, 320, Image.SCALE_SMOOTH);
+                label.setIcon(new ImageIcon(scaled));
+            } else {
+                label.setText("Image unavailable");
+            }
+        } catch (Exception ex) {
+            label.setText("Image unavailable");
+        }
+
+        panel.add(label, BorderLayout.CENTER);
+        return panel;
+    }
+
+    private void loadFaculties() {
+        new Thread(() -> {
+            try {
+                HttpClient client = HttpClient.newHttpClient();
+                HttpRequest request = HttpRequest.newBuilder()
+                        .uri(URI.create(BASE_URL + "/faculty"))
+                        .GET()
+                        .build();
+                HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+                JsonNode root = MAPPER.readTree(response.body());
+
+                List<FacultyOption> options = new ArrayList<>();
+                for (JsonNode node : root) {
+                    options.add(new FacultyOption(node.path("id").asLong(), node.path("name").asText()));
+                }
+
+                SwingUtilities.invokeLater(() -> {
+                    DefaultComboBoxModel<FacultyOption> model = new DefaultComboBoxModel<>();
+                    for (FacultyOption option : options) {
+                        model.addElement(option);
+                    }
+                    cmbFacultyStudent.setModel(model);
+                    cmbFacultyOrganiser.setModel(model);
+                });
+            } catch (Exception ex) {
+                SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(this, "Could not load faculties: " + ex.getMessage()));
+            }
+        }).start();
     }
 
     private JPanel labeledRow(String labelText, JComponent field) {
@@ -220,6 +279,21 @@ public class Register extends JFrame {
         return btnRoleOrganiser.isSelected() ? "ORGANISER" : "STUDENT";
     }
 
+    private static class FacultyOption {
+        private final Long id;
+        private final String name;
+
+        private FacultyOption(Long id, String name) {
+            this.id = id;
+            this.name = name;
+        }
+
+        @Override
+        public String toString() {
+            return name;
+        }
+    }
+
     private void handleRegister() {
         String password = new String(pwdPassword.getPassword());
         String confirm = new String(pwdConfirm.getPassword());
@@ -232,9 +306,15 @@ public class Register extends JFrame {
         try {
             RegisterRequestDTO register = new RegisterRequestDTO();
             register.setRole(getSelectedRole());
+            register.setFirstName(txtFirstName.getText());
+            register.setLastName(txtLastName.getText());
             register.setEmail(txtEmail.getText());
             register.setPassword(password);
-            register.setFacultyId(1L);
+
+            FacultyOption selectedFaculty = (FacultyOption) (getSelectedRole().equals("STUDENT") ? cmbFacultyStudent.getSelectedItem() : cmbFacultyOrganiser.getSelectedItem());
+            if (selectedFaculty != null && selectedFaculty.id != null) {
+                register.setFacultyId(selectedFaculty.id);
+            }
 
             if (getSelectedRole().equals("STUDENT")) {
                 register.setStudentNumber(txtStudentNumber.getText());
