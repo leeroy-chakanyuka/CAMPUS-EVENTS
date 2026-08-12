@@ -1,8 +1,10 @@
-package za.ac.cput;
+package src.main.java.za.ac.cput;
+
+
+import com.formdev.flatlaf.FlatLightLaf;
 
 import javax.swing.*;
 import java.awt.*;
-import com.formdev.flatlaf.FlatLightLaf;
 
 
 public class Login extends JFrame {
