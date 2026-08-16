@@ -1425,8 +1425,8 @@ public class Dashboard extends JFrame {
 
         SwingUtilities.invokeLater(() -> {
 
-            AdminDashboard dashboard =
-                    new AdminDashboard();
+            Dashboard dashboard =
+                    new Dashboard();
 
             dashboard.setVisible(true);
 
