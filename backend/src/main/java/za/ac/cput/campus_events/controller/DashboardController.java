@@ -1,7 +1,7 @@
 package za.ac.cput.campus_events.controller;
 /*
 Mologadi Dikgale
-Student no:231016263
+Stu no:231016263
  */
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

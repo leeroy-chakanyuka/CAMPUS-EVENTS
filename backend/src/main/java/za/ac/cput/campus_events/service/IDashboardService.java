@@ -1,7 +1,7 @@
 package za.ac.cput.campus_events.service;
 /*
 Mologadi Dikgale
-Student No: 231016263
+Student Number: 231016263
  */
 import za.ac.cput.campus_events.domain.Admin;
 import za.ac.cput.campus_events.domain.Event;

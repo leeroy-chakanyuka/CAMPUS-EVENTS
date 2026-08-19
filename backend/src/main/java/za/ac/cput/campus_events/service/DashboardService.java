@@ -88,7 +88,6 @@ public class DashboardService implements IDashboardService {
         return facultyRepository.findAll();
     }
 
-    // ── STUDENT ───────────────────────────────────────────────────────────
 
     @Override
     public void updateStudentStatus(Long studentId, boolean active, Long requestingAdminId) {
