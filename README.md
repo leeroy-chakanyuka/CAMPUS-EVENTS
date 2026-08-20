@@ -66,6 +66,15 @@ classDiagram
         +getCreatedAt() Date
         +getPassword() String
         +withPassword(password) Admin
+        +seedAdmin(request) CreateAdminResponseDTO
+        +isSystemInitialized() boolean
+        +createAdmin(request, requestingAdminId) CreateAdminResponseDTO
+        +changePassword(adminId, currentPassword, newPassword) void
+        +authenticate(email, password) Optional~Admin~
+        +register(request) RegisterResponseDTO
+        +verify(request) VerifyResponseDTO
+        +resend(request) RegisterResponseDTO
+        +login(request) LoginResponseDTO
     }
 
     class Faculty {
@@ -81,6 +90,14 @@ classDiagram
         +getCreatedByAdmin() Admin
         +getCreatedAt() LocalDateTime
         +new Faculty(existing, active) Faculty
+        +save(faculty) Faculty
+        +findById(id) Optional~Faculty~
+        +findAll() List~Faculty~
+        +deleteById(id) void
+        +deactivate(facultyId) void
+        +findByStatus(status) List~Faculty~
+        +createFaculty(dto, adminId) Faculty
+        +updateFacultyStatus(facultyId, active, adminId) void
     }
 
     class Student {
@@ -102,6 +119,8 @@ classDiagram
         +getFaculty() Faculty
         +getPassword() String
         +new Student(existing, active) Student
+        +updateStudentStatus(studentId, active, requestingAdminId) void
+        +save(student) Student
     }
 
     class Organiser {
@@ -123,6 +142,11 @@ classDiagram
         +isActive() boolean
         +getPassword() String
         +new Organiser(existing, active) Organiser
+        +registerOrganiser(organiser, facultyId) Organiser
+        +createEvent(organiserId, event) Event
+        +updateEvent(organiserId, event) Event
+        +closeEvent(organiserId, eventId) void
+        +updateOrganiserStatus(organiserId, active, requestingAdminId) void
     }
 
     class Event {
@@ -145,6 +169,8 @@ classDiagram
         +isFull() boolean
         +closeRegistration() void
         +reopenRegistration() void
+        +registerStudent(eventId) Event
+        +cancelEvent(eventId) Event
     }
 
     class Venue {
@@ -155,6 +181,13 @@ classDiagram
         +getName() String
         +getCapacity() Integer
         +getAddress() Address
+        +save(venue) Venue
+        +findById(id) Optional~Venue~
+        +findAll() List~Venue~
+        +deleteById(id) void
+        +findByName(name) List~Venue~
+        +findByCapacityGreaterThan(capacity) List~Venue~
+        +findByCity(city) List~Venue~
     }
 
     class Address {
@@ -185,6 +218,9 @@ classDiagram
         +cancel() void
         +checkIn() void
         +isActive() boolean
+        +createTicket(student, event, price) Ticket
+        +cancelTicket(ticketId) void
+        +checkInTicket(ticketId) void
     }
 
     class PromoCode {
@@ -208,6 +244,8 @@ classDiagram
         +isActive() boolean
         +isValidNow() boolean
         +applyTo(ticket) void
+        +validatePromoCode(code, event) boolean
+        +applyPromoCode(ticket, promoCode) void
     }
 
     class Notification {
@@ -247,127 +285,8 @@ classDiagram
         +getPin() String
         +withPin(pin) PendingRegistration
         +withExpiresAt(expiresAt) PendingRegistration
+        +sendVerificationEmail(pending) void
     }
-
-    class IAdminService {
-        +seedAdmin(request) CreateAdminResponseDTO
-        +isSystemInitialized() boolean
-        +createAdmin(request, requestingAdminId) CreateAdminResponseDTO
-        +changePassword(adminId, currentPassword, newPassword) void
-        +authenticate(email, password) Optional~Admin~
-    }
-    class AdminService {
-        +seedAdmin(request) CreateAdminResponseDTO
-        +isSystemInitialized() boolean
-        +createAdmin(request, requestingAdminId) CreateAdminResponseDTO
-        +changePassword(adminId, currentPassword, newPassword) void
-        +authenticate(email, password) Optional~Admin~
-    }
-
-    class IFacultyService {
-        +save(faculty) Faculty
-        +findById(id) Optional~Faculty~
-        +findAll() List~Faculty~
-        +deleteById(id) void
-        +deactivate(facultyId) void
-        +findByStatus(status) List~Faculty~
-        +createFaculty(dto, adminId) Faculty
-        +updateFacultyStatus(facultyId, active, adminId) void
-    }
-    class FacultyService {
-        +save(faculty) Faculty
-        +findById(id) Optional~Faculty~
-        +findAll() List~Faculty~
-        +deleteById(id) void
-        +deactivate(facultyId) void
-        +findByStatus(status) List~Faculty~
-        +createFaculty(dto, adminId) Faculty
-        +updateFacultyStatus(facultyId, active, adminId) void
-    }
-
-    class IStudentService {
-        +updateStudentStatus(studentId, active, requestingAdminId) void
-        +save(student) Student
-    }
-    class StudentService {
-        +updateStudentStatus(studentId, active, requestingAdminId) void
-        +save(student) Student
-    }
-
-    class IOrganiserService {
-        +registerOrganiser(organiser, facultyId) Organiser
-        +createEvent(organiserId, event) Event
-        +updateEvent(organiserId, event) Event
-        +closeEvent(organiserId, eventId) void
-        +updateOrganiserStatus(organiserId, active, requestingAdminId) void
-    }
-    class OrganiserService {
-        +registerOrganiser(organiser, facultyId) Organiser
-        +createEvent(organiserId, event) Event
-        +updateEvent(organiserId, event) Event
-        +closeEvent(organiserId, eventId) void
-        +updateOrganiserStatus(organiserId, active, requestingAdminId) void
-    }
-
-    class IEventService {
-        +registerStudent(eventId) Event
-        +cancelEvent(eventId) Event
-    }
-    class EventService {
-        +registerStudent(eventId) Event
-        +cancelEvent(eventId) Event
-    }
-
-    class ITicketService
-    class TicketService
-    class IPromoCodeService
-    class PromoCodeService
-    class IVenueService {
-        +save(venue) Venue
-        +findById(id) Optional~Venue~
-        +findAll() List~Venue~
-        +deleteById(id) void
-        +findByName(name) List~Venue~
-        +findByCapacityGreaterThan(capacity) List~Venue~
-        +findByCity(city) List~Venue~
-    }
-    class VeneuService {
-        +save(venue) Venue
-        +findById(id) Optional~Venue~
-        +findAll() List~Venue~
-        +deleteById(id) void
-        +findByName(name) List~Venue~
-        +findByCapacityGreaterThan(capacity) List~Venue~
-        +findByCity(city) List~Venue~
-    }
-    class AuthService {
-        +register(request) RegisterResponseDTO
-        +verify(request) VerifyResponseDTO
-        +resend(request) RegisterResponseDTO
-        +login(request) LoginResponseDTO
-    }
-    class EmailService {
-        +sendVerificationEmail(email, pin) void
-    }
-
-    class AdminRepository
-    class FacultyRepository
-    class StudentRepository
-    class OrganiserRepository
-    class EventRepository
-    class TicketRepository
-    class PromoCodeRepository
-    class VenueRepository
-    class PendingRegistrationRepository
-
-    IAdminService <|.. AdminService
-    IFacultyService <|.. FacultyService
-    IStudentService <|.. StudentService
-    IOrganiserService <|.. OrganiserService
-    IEventService <|.. EventService
-    ITicketService <|.. TicketService
-    IPromoCodeService <|.. PromoCodeService
-    IVenueService <|.. VeneuService
 
     Admin "1" --> "*" Faculty : creates
     Faculty "1" --> "*" Student : faculty
@@ -382,28 +301,6 @@ classDiagram
     Student "1" --> "*" Ticket : student
     Student "1" --> "*" Notification : student
     PromoCode "1" --> "*" Ticket : promoCode
-
-    AdminService ..> AdminRepository
-    AdminService ..> PendingRegistrationRepository
-    AdminService ..> EmailService
-
-    AuthService ..> AdminRepository
-    AuthService ..> FacultyRepository
-    AuthService ..> StudentRepository
-    AuthService ..> OrganiserRepository
-    AuthService ..> PendingRegistrationRepository
-    AuthService ..> EmailService
-
-    FacultyService ..> FacultyRepository
-    FacultyService ..> AdminRepository
-    StudentService ..> StudentRepository
-    OrganiserService ..> OrganiserRepository
-    OrganiserService ..> FacultyRepository
-    OrganiserService ..> EventRepository
-    EventService ..> EventRepository
-    TicketService ..> TicketRepository
-    PromoCodeService ..> PromoCodeRepository
-    VeneuService ..> VenueRepository
 ```
 
 ### Backend action flow
