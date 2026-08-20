@@ -7,117 +7,129 @@ import java.awt.*;
 
 public class AdminDashboard extends JFrame {
 
-    private JPanel navigationPanel;
+    private CardLayout cardLayout;
     private JPanel contentPanel;
+
+    private static final Color SIDEBAR_BG = new Color(0, 51, 102); // CPUT_BLUE
+    private static final Color SIDEBAR_ACTIVE = new Color(0, 71, 133);
 
     private JButton btnFaculty;
     private JButton btnStudents;
     private JButton btnOrganisers;
     private JButton btnEvents;
-    private JButton btnReports;
+    private JButton btnAdmins;
+    private JButton btnNotifications;
     private JButton btnLogout;
 
     public AdminDashboard() {
-
         setTitle("Campus Events - Admin Dashboard");
         setSize(1200, 700);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
-        setLayout(new BorderLayout());
         setResizable(false);
-        createHeader();
-        createNavigation();
-        createContent();
+        setLayout(new BorderLayout());
+        setWindowIcon();
 
-        setVisible(true);
+        add(buildNavigation(), BorderLayout.WEST);
+        add(buildContent(), BorderLayout.CENTER);
+
+        // land on Faculties by default
+        cardLayout.show(contentPanel, "faculty");
+        setActiveNav(btnFaculty);
     }
 
-    private void createHeader() {
-
-        JPanel header = new JPanel(new BorderLayout());
-        header.setBackground(new Color(32, 55, 100));
-        header.setPreferredSize(new Dimension(1200, 60));
-
-        JLabel title = new JLabel("Campus Events Administration");
-        title.setForeground(Color.WHITE);
-        title.setFont(new Font("Arial", Font.BOLD, 22));
-        title.setBorder(BorderFactory.createEmptyBorder(10,20,10,20));
-
-        header.add(title, BorderLayout.WEST);
-
-        add(header, BorderLayout.NORTH);
+    private void setWindowIcon() {
+        try {
+            java.net.URL iconUrl = getClass().getResource("/za/ac/cput/images/image.png");
+            if (iconUrl != null) {
+                setIconImage(new ImageIcon(iconUrl).getImage());
+            }
+        } catch (Exception ignored) {
+        }
     }
 
-    private void createNavigation() {
+    private JPanel buildNavigation() {
+        JPanel nav = new JPanel();
+        nav.setLayout(new BoxLayout(nav, BoxLayout.Y_AXIS));
+        nav.setPreferredSize(new Dimension(220, 700));
+        nav.setBackground(SIDEBAR_BG);
+        nav.setBorder(BorderFactory.createEmptyBorder(20, 12, 20, 12));
 
-        navigationPanel = new JPanel();
-        navigationPanel.setLayout(new GridLayout(6,1,5,5));
-        navigationPanel.setPreferredSize(new Dimension(220,700));
-        navigationPanel.setBorder(BorderFactory.createEmptyBorder(15,15,15,15));
+        btnFaculty = navButton("Faculties");
+        btnStudents = navButton("Students");
+        btnOrganisers = navButton("Organisers");
+        btnEvents = navButton("Events");
+        btnAdmins = navButton("Admins");
+        btnNotifications = navButton("Notifications");
+        btnLogout = navButton("Logout");
 
-        btnFaculty = new JButton("Faculty");
-        btnStudents = new JButton("Students");
-        btnOrganisers = new JButton("Organisers");
-        btnEvents = new JButton("Events");
-        btnReports = new JButton("Reports");
-        btnLogout = new JButton("Logout");
+        btnFaculty.addActionListener(e -> switchTo("faculty", btnFaculty));
+        btnStudents.addActionListener(e -> switchTo("students", btnStudents));
+        btnOrganisers.addActionListener(e -> switchTo("organisers", btnOrganisers));
+        btnEvents.addActionListener(e -> switchTo("events", btnEvents));
+        btnAdmins.addActionListener(e -> switchTo("admins", btnAdmins));
+        btnNotifications.addActionListener(e -> switchTo("notifications", btnNotifications));
+        btnLogout.addActionListener(e -> {
+            new Login().setVisible(true);
+            this.dispose();
+        });
 
-        navigationPanel.add(btnFaculty);
-        navigationPanel.add(btnStudents);
-        navigationPanel.add(btnOrganisers);
-        navigationPanel.add(btnEvents);
-        navigationPanel.add(btnReports);
-        navigationPanel.add(btnLogout);
+        nav.add(btnFaculty);
+        nav.add(Box.createVerticalStrut(4));
+        nav.add(btnStudents);
+        nav.add(Box.createVerticalStrut(4));
+        nav.add(btnOrganisers);
+        nav.add(Box.createVerticalStrut(4));
+        nav.add(btnEvents);
+        nav.add(Box.createVerticalStrut(4));
+        nav.add(btnAdmins);
+        nav.add(Box.createVerticalStrut(4));
+        nav.add(btnNotifications);
+        nav.add(Box.createVerticalGlue());
+        nav.add(btnLogout);
 
-        add(navigationPanel, BorderLayout.WEST);
+        return nav;
     }
 
-    private void createContent() {
-
-        contentPanel = new JPanel(new BorderLayout());
-
-        JLabel welcome = new JLabel("Welcome Administrator", SwingConstants.CENTER);
-        welcome.setFont(new Font("Arial", Font.BOLD, 30));
-
-        JLabel subtitle = new JLabel(
-                "Select an option from the menu.",
-                SwingConstants.CENTER);
-
-        subtitle.setFont(new Font("Arial", Font.PLAIN,18));
-
-        JPanel center = new JPanel();
-        center.setLayout(new GridLayout(2,1));
-
-        center.add(welcome);
-        center.add(subtitle);
-
-        contentPanel.add(center, BorderLayout.CENTER);
-
-        add(contentPanel, BorderLayout.CENTER);
+    private JButton navButton(String label) {
+        JButton button = new JButton(label);
+        button.setFont(new Font("Arial", Font.BOLD, 14));
+        button.setForeground(Color.WHITE);
+        button.setBackground(SIDEBAR_BG);
+        button.setFocusPainted(false);
+        button.setFocusable(false); 
+        button.setBorderPainted(false);
+        button.setContentAreaFilled(true);
+        button.setHorizontalAlignment(SwingConstants.LEFT);
+        button.setAlignmentX(Component.LEFT_ALIGNMENT);
+        button.setMaximumSize(new Dimension(Integer.MAX_VALUE, 44)); 
+        button.setBorder(BorderFactory.createEmptyBorder(10, 14, 10, 14));
+        return button;
     }
 
-    public JButton getBtnFaculty() {
-        return btnFaculty;
+    private void switchTo(String cardName, JButton activeButton) {
+        cardLayout.show(contentPanel, cardName);
+        setActiveNav(activeButton);
     }
 
-    public JButton getBtnStudents() {
-        return btnStudents;
+    private void setActiveNav(JButton active) {
+        for (JButton b : new JButton[]{btnFaculty, btnStudents, btnOrganisers, btnEvents, btnAdmins, btnNotifications}) {
+            b.setBackground(b == active ? SIDEBAR_ACTIVE : SIDEBAR_BG);
+        }
     }
 
-    public JButton getBtnOrganisers() {
-        return btnOrganisers;
-    }
+    private JPanel buildContent() {
+        cardLayout = new CardLayout();
+        contentPanel = new JPanel(cardLayout);
 
-    public JButton getBtnEvents() {
-        return btnEvents;
-    }
+        contentPanel.add(new FacultyPanel(), "faculty");
+        contentPanel.add(new StudentsPanel(), "students");
+        contentPanel.add(new OrganisersPanel(), "organisers");
+        contentPanel.add(new EventsPanel(), "events");
+        contentPanel.add(new AdminsPanel(), "admins");
+        contentPanel.add(new NotificationsPanel(), "notifications");
 
-    public JButton getBtnReports() {
-        return btnReports;
-    }
-
-    public JButton getBtnLogout() {
-        return btnLogout;
+        return contentPanel;
     }
 
     public static void main(String[] args) {
@@ -126,6 +138,6 @@ public class AdminDashboard extends JFrame {
         } catch (UnsupportedLookAndFeelException e) {
             e.printStackTrace();
         }
-        SwingUtilities.invokeLater(() -> new AdminDashboard());
+        SwingUtilities.invokeLater(() -> new AdminDashboard().setVisible(true));
     }
 }
