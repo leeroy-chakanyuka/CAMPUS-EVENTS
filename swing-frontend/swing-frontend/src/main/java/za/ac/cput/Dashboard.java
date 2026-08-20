@@ -570,8 +570,8 @@ public class Dashboard extends JFrame {
 
             System.out.println(response);
 
-            // Parse JSON here using Jackson.
-            // Then populate studentTable.
+
+
 
         } catch (Exception e) {
 
@@ -1204,9 +1204,7 @@ public class Dashboard extends JFrame {
     }
 
 
-    // ============================================================
-    // HTTP PUT
-    // ============================================================
+
 
     private String put(
             String endpoint,
@@ -1418,7 +1416,6 @@ public class Dashboard extends JFrame {
     }
 
 
-
     public static void main(
             String[] args
     ) {
@@ -1432,4 +1429,5 @@ public class Dashboard extends JFrame {
 
         });
     }
+
 }
