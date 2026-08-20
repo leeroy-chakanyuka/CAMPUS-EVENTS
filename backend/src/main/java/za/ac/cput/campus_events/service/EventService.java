@@ -42,4 +42,9 @@ public class EventService implements IEventService {
         }
         throw new IllegalStateException("Event not found");
     }
+
+    @Override
+    public void forceCancelEvent(Long id, Long adminId) {
+
+    }
 }

@@ -56,6 +56,10 @@ public class Faculty {
         return createdAt;
     }
 
+    public Faculty getFaculty() {
+        return null;
+    }
+
     public static class Builder {
         private String name;
         private String status;

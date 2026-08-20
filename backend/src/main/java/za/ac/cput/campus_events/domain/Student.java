@@ -32,6 +32,9 @@ public class Student {
     public Student() {
     }
 
+    public Student(Student student, boolean b) {
+    }
+
     public Long getId() {
         return id;
     }

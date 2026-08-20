@@ -3,52 +3,44 @@ package za.ac.cput.campus_events.service;
 import org.springframework.stereotype.Service;
 import za.ac.cput.campus_events.domain.Venue;
 import za.ac.cput.campus_events.repository.VenueRepository;
-import za.ac.cput.campus_events.service.IVenueService;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class VenueService implements IVenueService {
+    private final VenueRepository repository;
 
-    private final VenueRepository venueRepository;
-
-    public VenueService(VenueRepository venueRepository) {
-        this.venueRepository = venueRepository;
+    public VenueService(VenueRepository repository) {
+        this.repository = repository;
     }
 
     @Override
-    public Venue save(Venue venue) {
-        return venueRepository.save(venue);
+    public Venue create(Venue venue) {
+        return repository.save(venue);
     }
 
     @Override
-    public Optional<Venue> findById(Long id) {
-        return venueRepository.findById(id);
+    public Venue update(Long id, Venue venue) {
+        Venue existing = repository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Venue not found"));
+        existing.setName(venue.getName());
+        existing.setCapacity(venue.getCapacity());
+        existing.setAddress(venue.getAddress());
+        return repository.save(existing);
+    }
+
+    @Override
+    public void delete(Long id) {
+        repository.deleteById(id);
+    }
+
+    @Override
+    public Venue findById(Long id) {
+        return repository.findById(id).orElse(null);
     }
 
     @Override
     public List<Venue> findAll() {
-        return venueRepository.findAll();
-    }
-
-    @Override
-    public void deleteById(Long id) {
-        venueRepository.deleteById(id);
-    }
-
-    @Override
-    public List<Venue> findByName(String name) {
-        return venueRepository.findByName(name);
-    }
-
-    @Override
-    public List<Venue> findByCapacityGreaterThan(int capacity) {
-        return venueRepository.findByCapacityGreaterThan(capacity);
-    }
-
-    @Override
-    public List<Venue> findByCity(String city) {
-        return venueRepository.findByAddress_City(city);
+        return repository.findAll();
     }
 }

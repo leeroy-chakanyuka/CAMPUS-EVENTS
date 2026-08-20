@@ -57,4 +57,7 @@ public class Notification {
                 ", recipientType='" + recipientType + '\'' +
                 '}';
     }
+
+    public static class Builder {
+    }
 }

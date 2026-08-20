@@ -93,18 +93,9 @@ public class OrganiserService implements IOrganiserService {
 
     @Override
     public void closeEvent(Long organiserId, Long eventId) {
-        Organiser organiser = organiserRepository.findById(organiserId)
-                .orElseThrow(() -> new RuntimeException("Organiser not found with id: " + organiserId));
 
-        Faculty faculty = organiser.getFaculty(); // FIXED
-        if (faculty == null || !faculty.getStatus().equalsIgnoreCase("ACTIVE")) {
-            throw new RuntimeException("Cannot close event — faculty is not ACTIVE");
-        }
+    }
 
-        Event event = eventRepository.findById(eventId)
-                .orElseThrow(() -> new RuntimeException("Event not found with id: " + eventId));
-
-        event.closeRegistration(); // assuming Event has this method
-        eventRepository.save(event);
+    public boolean existsByEmail(String email) {
     }
 }

@@ -14,6 +14,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
+ import org.springframework.data.jpa.repository.JpaRepository;
+
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -28,12 +30,13 @@ class FacultyRepositoryTest {
     @BeforeEach
     void setUp() {
         faculty = new Faculty.Builder()
-                .setName("Faculty of Engineering")
-                .setStatus("ACTIVE")
-                .setContactEmail("engineering@cput.ac.za")
-                .setCreatedByAdminId(1L)
-                .setCreatedAt(LocalDateTime.now())
+                .name("Faculty of Engineering")
+                .status("ACTIVE")
+                .contactEmail("engineering@cput.ac.za")
+                .createdByAdminId(1L)
+                .createdAt(LocalDateTime.now())
                 .build();
+
     }
 
     @Test

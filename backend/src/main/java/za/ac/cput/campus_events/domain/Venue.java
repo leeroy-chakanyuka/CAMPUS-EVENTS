@@ -50,7 +50,7 @@ public class Venue {
                 '}';
     }
 
-    // Builder
+    //  Builder
     public static class Builder {
         private Long id;
         private String name;
@@ -90,3 +90,4 @@ public class Venue {
         }
     }
 }
+
