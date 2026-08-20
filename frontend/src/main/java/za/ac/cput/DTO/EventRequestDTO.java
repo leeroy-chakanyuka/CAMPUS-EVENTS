@@ -3,7 +3,7 @@
  * Author: Faith Adams (Student #222297204)
  * Purpose: Carries event creation request data from frontend to backend.
  */
-package za.ac.cput.campus_events.DTO;
+package za.ac.cput.DTO;
 
 public class EventRequestDTO {
     private String title;

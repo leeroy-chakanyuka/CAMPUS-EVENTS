@@ -3,7 +3,7 @@
  * Author: Faith Adams (Student #222297204)
  * Purpose: Returns registration response data from backend to frontend.
  */
-package src.main.java.za.ac.cput.DTO;
+package za.ac.cput.DTO;
 
 public class RegisterResponseDTO {
     private boolean success;

@@ -3,7 +3,7 @@
  * Author: Faith Adams (Student #222297204)
  * Purpose: Carries verification request data from frontend to backend.
  */
-package src.main.java.za.ac.cput.DTO;
+package za.ac.cput.DTO;
 
 public class VerifyRequestDTO {
     private String uuid;

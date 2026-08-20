@@ -3,7 +3,7 @@
  * Author: Faith Adams (Student #222297204)
  * Purpose: Carries event response data from backend to frontend.
  */
-package za.ac.cput.campus_events.DTO;
+package za.ac.cput.DTO;
 
 public class EventResponseDTO {
     private Long id;

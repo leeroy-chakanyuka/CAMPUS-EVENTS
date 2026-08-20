@@ -3,7 +3,7 @@
  * Author: Faith Adams (Student #222297204)
  * Purpose: Reused across Student, Organiser, and Faculty status update requests.
  */
-package src.main.java.za.ac.cput.DTO;
+package za.ac.cput.DTO;
 
 class
 StatusUpdateRequestDTO {
