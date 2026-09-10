@@ -35,4 +35,20 @@ public class AuthController {
     public RegisterResponseDTO resend(@RequestBody ResendRequestDTO request) {
         return authService.resend(request);
     }
+
+
+    /* check this one out too it goes with its services
+     public AuthController(AuthService authService) {
+        this.authService = authService;
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<LoginResponseDTO> login(@RequestBody LoginRequestDTO dto) {
+        LoginResponseDTO response = authService.login(dto);
+        if (response.isSuccess()) {
+            return ResponseEntity.ok(response);
+        }
+        return ResponseEntity.badRequest().body(response);
+    }
+     */
 }

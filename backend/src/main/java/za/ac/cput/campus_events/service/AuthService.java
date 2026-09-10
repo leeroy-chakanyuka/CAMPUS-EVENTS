@@ -395,4 +395,81 @@ public class AuthService {
         response.setMessage("Unsupported role.");
         return response;
     }
+    /* please check out my auth part it is commented out because i didnt want to =mess up the existing one
+    private final StudentRepository   studentRepository;
+    private final OrganiserRepository organiserRepository;
+    private final AdminRepository     adminRepository;
+    private final PasswordEncoder     passwordEncoder;
+
+    public AuthService(StudentRepository studentRepository,
+                       OrganiserRepository organiserRepository,
+                       AdminRepository adminRepository,
+                       PasswordEncoder passwordEncoder) {
+        this.studentRepository   = studentRepository;
+        this.organiserRepository = organiserRepository;
+        this.adminRepository     = adminRepository;
+        this.passwordEncoder     = passwordEncoder;
+    }
+
+    public LoginResponseDTO login(LoginRequestDTO dto) {
+        String role  = dto.getRole();
+        String email = dto.getEmail();
+        String pass  = dto.getPassword();
+
+        if (email == null || email.trim().isEmpty())
+            return fail("Email is required");
+        if (pass == null || pass.trim().isEmpty())
+            return fail("Password is required");
+
+        switch (role == null ? "" : role.toUpperCase()) {
+
+            case "ADMIN": {
+                Admin admin = adminRepository.findByEmail(email)
+                        .orElse(null);
+                if (admin == null)
+                    return fail("No admin account found with that email");
+                if (!passwordEncoder.matches(pass, admin.getPassword()))
+                    return fail("Incorrect password");
+                if (!admin.isActive())
+                    return fail("Your account has been suspended");
+                return success("ADMIN", admin.getId());
+            }
+
+            case "ORGANISER": {
+                Organiser organiser = organiserRepository.findByEmail(email)
+                        .orElse(null);
+                if (organiser == null)
+                    return fail("No organiser account found with that email");
+                if (!passwordEncoder.matches(pass, organiser.getPassword()))
+                    return fail("Incorrect password");
+                if (!organiser.isActive())
+                    return fail("Your account has been suspended");
+                return success("ORGANISER", organiser.getId());
+            }
+
+            case "STUDENT": {
+                Student student = studentRepository.findByEmail(email)
+                        .orElse(null);
+                if (student == null)
+                    return fail("No student account found with that email");
+                if (!passwordEncoder.matches(pass, student.getPassword()))
+                    return fail("Incorrect password");
+                if (!student.isActive())
+                    return fail("Your account has been suspended");
+                return success("STUDENT", student.getId());
+            }
+
+            default:
+                return fail("Invalid role selected");
+        }
+    }
+
+    private LoginResponseDTO success(String role, Long userId) {
+        return new LoginResponseDTO(true, "Login successful", role, userId, null);
+    }
+
+    private LoginResponseDTO fail(String message) {
+        return new LoginResponseDTO(false, message, null, null, null);
+    }
+     */
 }
