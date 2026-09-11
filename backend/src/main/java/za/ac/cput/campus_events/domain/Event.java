@@ -2,7 +2,8 @@ package za.ac.cput.campus_events.domain;
 
 import jakarta.persistence.*;
 import org.springframework.web.ErrorResponse;
-
+import za.ac.cput.campus_events.domain.Organiser;
+import za.ac.cput.campus_events.domain.Faculty;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
@@ -49,6 +50,7 @@ public class Event {
         this.faculty = builder.faculty;
         this.tickets = builder.tickets;
     }
+
 
     public Event() {
 
@@ -99,6 +101,26 @@ public class Event {
     public Organiser getOrganiser() { return organiser; }
     public Faculty getFaculty() { return faculty; }
     public Set<Ticket> getTickets() { return tickets; }
+
+    public void updateDetails(String title,
+                              String description,
+                              LocalDateTime eventDate,
+                              Integer capacity,
+                              Venue venue) {
+        this.title = title;
+        this.description = description;
+        this.eventDate = eventDate;
+        this.capacity = capacity;
+        this.venue = venue;
+    }
+    public void assignOrganiserAndFaculty(Organiser organiser, Faculty faculty) {
+        this.organiser = organiser;
+        this.faculty = faculty;
+    }
+
+    public void closeRegistration() {
+        this.open = false;
+    }
 
     @Override
     public String toString() {

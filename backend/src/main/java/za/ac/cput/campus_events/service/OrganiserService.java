@@ -63,6 +63,7 @@ public class OrganiserService implements IOrganiserService {
 
     @Override
     public Event createEvent(Long organiserId, Event event) {
+
         Organiser organiser = organiserRepository.findById(organiserId)
                 .orElseThrow(() -> new RuntimeException(
                         "Organiser not found: " + organiserId));
@@ -73,6 +74,7 @@ public class OrganiserService implements IOrganiserService {
         }
 
         Faculty faculty = organiser.getFaculty();
+
         if (faculty == null) {
             throw new RuntimeException(
                     "Faculty not found for organiser: " + organiserId);
@@ -82,6 +84,8 @@ public class OrganiserService implements IOrganiserService {
             throw new RuntimeException(
                     "Cannot create event — faculty is not active");
         }
+
+        event.assignOrganiserAndFaculty(organiser, faculty);
 
         return eventRepository.save(event);
     }

@@ -14,4 +14,7 @@ public interface EventRepository extends JpaRepository<Event, Long> {
 
     // Find all events that are currently open
     List<Event> findByOpenTrue();
+
+    //
+    List<Event> findByOrganiserId(Long organiserId);
 }
