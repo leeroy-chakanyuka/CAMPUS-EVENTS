@@ -4,9 +4,12 @@
  * Purpose: Returns registration response data from backend to frontend.
  */
 package za.ac.cput.DTO;
+<<<<<<< HEAD:frontend/src/main/java/za/ac/cput/DTO/RegisterResponseDTO.java
+=======
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
+>>>>>>> 3910e098ee96ddd014a3a56a0d2d920a85fa89af:swing-frontend/swing-frontend/src/main/java/za/ac/cput/DTO/RegisterResponseDTO.java
 
 public class RegisterResponseDTO {
     private boolean success;
