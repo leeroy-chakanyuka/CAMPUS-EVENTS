@@ -36,8 +36,6 @@ public class Event {
     @OneToMany(mappedBy = "event", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Ticket> tickets = new HashSet<>();
 
-
-
     // Private constructor for Builder
     private Event(Builder builder) {
         this.title = builder.title;
@@ -54,19 +52,6 @@ public class Event {
 
     public Event() {
 
-    }
-
-    public void closeRegistration() {
-    }
-
-    public void setOrganiser(Organiser organiser) {
-    }
-
-    public void setCapacity(int i) {
-    }
-
-
-    public void setOpen(boolean b) {
     }
 
     // Builder Pattern

@@ -1,5 +1,5 @@
 // za.ac.cput.dto.notification.NotificationResponseDTO.java
-package za.ac.cput.dto.notification;
+package za.ac.cput.campus_events.DTO;
 
 import java.time.LocalDateTime;
 

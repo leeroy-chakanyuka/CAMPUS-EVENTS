@@ -9,11 +9,15 @@ class VenueFactoryTest {
 
     @Test
     void testCreateVenue() {
+<<<<<<< HEAD
         Venue venue = VenueFactory.createVenue("Hall A", 200, 1L, "Main Building");
         assertNotNull(venue, "VenueFactory returned null");
         assertEquals("Hall A", venue.getName(), "Venue name mismatch");
         assertEquals(200, venue.getCapacity(), "Venue capacity mismatch");
         assertEquals(1L, venue.getFacultyId(), "Venue facultyId mismatch");
         assertEquals("Main Building", venue.getLocation(), "Venue location mismatch");
+=======
+
+>>>>>>> 3910e098ee96ddd014a3a56a0d2d920a85fa89af
     }
 }

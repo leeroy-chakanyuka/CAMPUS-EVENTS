@@ -7,7 +7,8 @@ import za.ac.cput.campus_events.domain.Ticket;
 
 public class TicketFactory {
     public static Ticket createTicket(Student student, Event event, PromoCode promoCode, Double price) {
-        if(price < 0) {
+
+        if (price == null || price < 0) {
             return null;
         }
         if(event == null) {

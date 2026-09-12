@@ -13,8 +13,6 @@ public class PromoCodeService implements IPromoCodeService {
         if (promoCode == null || student == null) return false;
         if (!promoCode.isActive() || promoCode.isExpired()) return false;
 
-        // Optional: check if student already used this promo
-        // e.g., promoCode.hasBeenUsedBy(student)
 
         return true;
     }

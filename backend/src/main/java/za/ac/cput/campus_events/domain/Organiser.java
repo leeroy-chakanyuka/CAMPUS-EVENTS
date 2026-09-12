@@ -22,8 +22,15 @@ public class Organiser {
     private String role;
     private LocalDateTime createdAt;
 
+    private boolean active = true; // new organisers start active
+
+    @ManyToOne
+    @JoinColumn(name = "faculty_id")
+    private Faculty faculty;
+
     @OneToMany(mappedBy = "organiser", fetch = FetchType.LAZY)
     private List<Event> events;
+    private String password;
 
     protected Organiser() {}
 
@@ -34,17 +41,51 @@ public class Organiser {
         this.email     = builder.email;
         this.role      = builder.role;
         this.createdAt = builder.createdAt;
+        this.faculty   = builder.faculty;
         // we'll create an addEvent method so for now just init
         this.events = new ArrayList<>();
+        this.password = builder.password;
     }
 
-    public Long          getId()        { return id; }
-    public String        getFirstName() { return firstName; }
-    public String        getLastName()  { return lastName; }
-    public String        getEmail()     { return email; }
-    public String        getRole()      { return role; }
-    public LocalDateTime getCreatedAt() { return createdAt; }
-    public List<Event>   getEvents()    { return events; }
+    public Organiser(Organiser existing, boolean active) {
+        this.id        = existing.id;
+        this.firstName = existing.firstName;
+        this.lastName  = existing.lastName;
+        this.email     = existing.email;
+        this.role      = existing.role;
+        this.createdAt = existing.createdAt;
+        this.faculty   = existing.faculty;
+        this.events    = existing.events;
+        this.active    = active;
+    }
+
+    public Long getId(){
+        return id;
+    }
+    public String getFirstName() {
+        return firstName;
+    }
+    public String getLastName()  {
+        return lastName;
+    }
+    public String getEmail() {
+        return email;
+    }
+    public String getRole() {
+        return role;
+    }
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+    public List<Event> getEvents() {
+        return events;
+    }
+    public boolean isActive(){
+        return active;
+    }
+    public Faculty getFaculty(){
+        return faculty;
+    }
 
     @Override
     public String toString() {
@@ -54,15 +95,14 @@ public class Organiser {
                 ", lastName='"  + lastName    + '\'' +
                 ", email='"     + email       + '\'' +
                 ", role='"      + role        + '\'' +
+                ", active="     + active      +
+                ", faculty="    + faculty     +
                 ", createdAt="  + createdAt   +
                 '}';
     }
 
-    public Faculty getFaculty() {
-        return null;
-    }
-
-    public void setFaculty(Faculty faculty) {
+    public String getPassword() {
+        return this.password;
     }
 
     public static class Builder {
@@ -72,7 +112,14 @@ public class Organiser {
         private String        email;
         private String        role;
         private LocalDateTime createdAt;
+        private Faculty        faculty;
         private List<Event>   events;
+        private String password;
+        
+        public Builder setPassword(String password){
+            this.password = password;
+            return this;
+        }
 
 
         public Builder setFirstName(String firstName) {
@@ -95,8 +142,13 @@ public class Organiser {
             this.createdAt = createdAt;
             return this;
         }
+        public Builder setFaculty(Faculty faculty) {
+            this.faculty = faculty;
+            return this;
+        }
 
         public Organiser build() {
+
             return new Organiser(this);
         }
     }

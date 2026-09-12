@@ -23,7 +23,8 @@ class VenueServiceTest {
     private VenueRepository venueRepository;
 
     @InjectMocks
-    private VenueService venueService;
+    private VeneuService venueService;
+
 
     private Venue venue;
 

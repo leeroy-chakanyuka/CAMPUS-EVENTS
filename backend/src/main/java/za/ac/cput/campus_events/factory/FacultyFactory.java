@@ -11,13 +11,11 @@ public class FacultyFactory {
 
     public static Faculty createFaculty(String name, String status, String contactEmail, Admin createdByAdmin) {
         if (name == null || name.isEmpty()) return null;
-        if (status == null || status.isEmpty()) return null;
         if (contactEmail == null || contactEmail.isEmpty()) return null;
         if (createdByAdmin == null) return null;
 
         return new Faculty.Builder()
                 .setName(name)
-                .setStatus(status)
                 .setEmail(contactEmail)
                 .setCreatedByAdmin(createdByAdmin)
                 .build();

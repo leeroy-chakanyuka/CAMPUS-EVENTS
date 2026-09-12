@@ -1,10 +1,7 @@
 package za.ac.cput.campus_events.service;
-/*
-Mologadi Dikgale
-Student No: 231016263
- */
 
 import org.springframework.stereotype.Service;
+import za.ac.cput.campus_events.service.IOrganiserService;
 import za.ac.cput.campus_events.domain.Event;
 import za.ac.cput.campus_events.domain.Faculty;
 import za.ac.cput.campus_events.domain.Organiser;
@@ -19,15 +16,15 @@ import java.util.Optional;
 public class OrganiserService implements IOrganiserService {
 
     private final OrganiserRepository organiserRepository;
-    private final FacultyRepository facultyRepository;
-    private final EventRepository eventRepository;
+    private final FacultyRepository   facultyRepository;
+    private final EventRepository     eventRepository;
 
     public OrganiserService(OrganiserRepository organiserRepository,
                             FacultyRepository facultyRepository,
                             EventRepository eventRepository) {
         this.organiserRepository = organiserRepository;
-        this.facultyRepository = facultyRepository;
-        this.eventRepository = eventRepository;
+        this.facultyRepository   = facultyRepository;
+        this.eventRepository     = eventRepository;
     }
 
     @Override
@@ -53,49 +50,124 @@ public class OrganiserService implements IOrganiserService {
     @Override
     public Organiser registerOrganiser(Organiser organiser, Long facultyId) {
         Faculty faculty = facultyRepository.findById(facultyId)
-                .orElseThrow(() -> new RuntimeException("Faculty not found with id: " + facultyId)).getFaculty();
+                .orElseThrow(() -> new RuntimeException(
+                        "Faculty not found: " + facultyId));
 
-        if (!faculty.getStatus().equalsIgnoreCase("ACTIVE")) {
-            throw new RuntimeException("Cannot register organiser — faculty is not ACTIVE");
+        if (!faculty.isActive()) {
+            throw new RuntimeException(
+                    "Cannot register organiser — faculty is not active");
         }
 
-        organiser.setFaculty(faculty); // assuming Organiser has a Faculty field
         return organiserRepository.save(organiser);
     }
 
     @Override
     public Event createEvent(Long organiserId, Event event) {
         Organiser organiser = organiserRepository.findById(organiserId)
-                .orElseThrow(() -> new RuntimeException("Organiser not found with id: " + organiserId));
+                .orElseThrow(() -> new RuntimeException(
+                        "Organiser not found: " + organiserId));
 
-        Faculty faculty = organiser.getFaculty(); // FIXED: use organiser’s faculty
-        if (faculty == null || !faculty.getStatus().equalsIgnoreCase("ACTIVE")) {
-            throw new RuntimeException("Cannot create event — faculty is not ACTIVE");
+        if (!organiser.isActive()) {
+            throw new RuntimeException(
+                    "Cannot create event — organiser is suspended");
         }
 
-        event.setOrganiser(organiser); // assuming Event has an organiser field
+        Faculty faculty = organiser.getFaculty();
+        if (faculty == null) {
+            throw new RuntimeException(
+                    "Faculty not found for organiser: " + organiserId);
+        }
+
+        if (!faculty.isActive()) {
+            throw new RuntimeException(
+                    "Cannot create event — faculty is not active");
+        }
+
         return eventRepository.save(event);
     }
 
     @Override
     public Event updateEvent(Long organiserId, Event event) {
         Organiser organiser = organiserRepository.findById(organiserId)
-                .orElseThrow(() -> new RuntimeException("Organiser not found with id: " + organiserId));
+                .orElseThrow(() -> new RuntimeException(
+                        "Organiser not found: " + organiserId));
 
-        Faculty faculty = organiser.getFaculty(); // FIXED
-        if (faculty == null || !faculty.getStatus().equalsIgnoreCase("ACTIVE")) {
-            throw new RuntimeException("Cannot update event — faculty is not ACTIVE");
+        if (!organiser.isActive()) {
+            throw new RuntimeException(
+                    "Cannot update event — organiser is suspended");
         }
 
-        event.setOrganiser(organiser);
+        Faculty faculty = organiser.getFaculty();
+        if (faculty == null) {
+            throw new RuntimeException(
+                    "Faculty not found for organiser: " + organiserId);
+        }
+
+        if (!faculty.isActive()) {
+            throw new RuntimeException(
+                    "Cannot update event — faculty is not active");
+        }
+
         return eventRepository.save(event);
     }
 
     @Override
     public void closeEvent(Long organiserId, Long eventId) {
+<<<<<<< HEAD
 
     }
 
     public boolean existsByEmail(String email) {
+=======
+        Organiser organiser = organiserRepository.findById(organiserId)
+                .orElseThrow(() -> new RuntimeException(
+                        "Organiser not found: " + organiserId));
+
+        if (!organiser.isActive()) {
+            throw new RuntimeException(
+                    "Cannot close event — organiser is suspended");
+        }
+
+        Event event = eventRepository.findById(eventId)
+                .orElseThrow(() -> new RuntimeException(
+                        "Event not found: " + eventId));
+
+        eventRepository.save(event);
+>>>>>>> 3910e098ee96ddd014a3a56a0d2d920a85fa89af
+    }
+
+    @Override
+    public void updateOrganiserStatus(Long organiserId, boolean active,
+                                      Long requestingAdminId) {
+        if (requestingAdminId == null) {
+            throw new IllegalStateException("Admin only");
+        }
+
+        Organiser existing = organiserRepository.findById(organiserId)
+                .orElseThrow(() -> new RuntimeException(
+                        "Organiser not found: " + organiserId));
+
+        Organiser updated = new Organiser(existing, active);
+        organiserRepository.save(updated);
+    }
+
+    @Override
+    public <T> T create(T t) {
+        return null;
+    }
+
+    @Override
+    public <T> T read(Long id) {
+        return null;
+    }
+
+    @Override
+    public <T> T update(T t) {
+        return null;
+    }
+
+    @Override
+    public <T> void delete(T t) {
+
     }
 }
