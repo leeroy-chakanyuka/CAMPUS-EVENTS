@@ -4,9 +4,12 @@
  * Purpose: Carries registration request data from frontend to backend.
  */
 package za.ac.cput.DTO;
+<<<<<<< HEAD:frontend/src/main/java/za/ac/cput/DTO/RegisterRequestDTO.java
+=======
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
+>>>>>>> 3910e098ee96ddd014a3a56a0d2d920a85fa89af:swing-frontend/swing-frontend/src/main/java/za/ac/cput/DTO/RegisterRequestDTO.java
 
 public class RegisterRequestDTO {
     private String role;
