@@ -1,10 +1,9 @@
-// za.ac.cput.dto.notification.SendNotificationRequestDTO.java
 package za.ac.cput.campus_events.DTO;
 
 public class SendNotificationRequestDTO {
     private String message;
     private Long recipientId;
-    private String recipientType; // "Student", "Organiser", "Admin"
+    private String recipientType; // "STUDENT", "ORGANISER", "ADMIN"
 
     // Getters and setters
     public String getMessage() { return message; }
