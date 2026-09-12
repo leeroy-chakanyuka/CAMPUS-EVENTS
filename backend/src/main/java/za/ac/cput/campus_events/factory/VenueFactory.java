@@ -26,4 +26,8 @@ public class VenueFactory {
                 .setAddress(address)
                 .build();
     }
+
+    public static Venue createVenue(String hallA, int i, long l, String mainBuilding) {
+        return null;
+    }
 }
