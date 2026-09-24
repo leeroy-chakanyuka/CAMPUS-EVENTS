@@ -6,20 +6,8 @@ import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
-import java.util.List;
 
 public class OrganiserNotificationsPanel extends JPanel {
-    private static final String BASE_URL =
-            "http://localhost:8080";
-    private final HttpClient httpClient =
-            HttpClient.newHttpClient();
-    private Long organiserId;
 
     private JTable inboxTable;
     private DefaultTableModel inboxModel;
@@ -40,12 +28,6 @@ public class OrganiserNotificationsPanel extends JPanel {
     private static final Color UNREAD_BG = new Color(255, 249, 230);
 
     public OrganiserNotificationsPanel() {
-        this(null);
-    }
-
-    public OrganiserNotificationsPanel(Long organiserId) {
-
-        this.organiserId = organiserId;
         setLayout(new BorderLayout());
         setBackground(Color.WHITE);
         setBorder(new EmptyBorder(20, 20, 20, 20));
@@ -88,7 +70,6 @@ public class OrganiserNotificationsPanel extends JPanel {
         card.add(buildInboxTable(), BorderLayout.CENTER);
         return card;
     }
-
 
     private void handleRefresh() {
         // TODO: GET /notification/organiser/{recipientId} here — refetch instead of reseeding
@@ -243,135 +224,5 @@ public class OrganiserNotificationsPanel extends JPanel {
         inboxModel.addRow(new Object[]{"Event registrations opened", "2 min ago", "Unread", "Mark as read"});
         inboxModel.addRow(new Object[]{"New event reminder", "1 hour ago", "Unread", "Mark as read"});
         inboxModel.addRow(new Object[]{"System notification", "Yesterday", "Read", "—"});
-    }
-    private String loadNotificationsFromBackend()
-            throws Exception {
-
-        HttpRequest request =
-                HttpRequest.newBuilder()
-                        .uri(
-                                URI.create(
-                                        BASE_URL
-                                                + "/notification/organiser/"
-                                                + organiserId
-                                )
-                        )
-                        .GET()
-                        .build();
-
-        HttpResponse<String> response =
-                httpClient.send(
-                        request,
-                        HttpResponse.BodyHandlers.ofString()
-                );
-
-        if (response.statusCode() < 200
-                || response.statusCode() >= 300) {
-
-            throw new RuntimeException(
-                    "Could not load notifications. HTTP "
-                            + response.statusCode()
-            );
-        }
-
-        return response.body();
-    }
-    private void markNotificationAsRead(
-            Long notificationId) throws Exception {
-
-        HttpRequest request =
-                HttpRequest.newBuilder()
-                        .uri(
-                                URI.create(
-                                        BASE_URL
-                                                + "/notification/"
-                                                + notificationId
-                                                + "/read"
-                                )
-                        )
-                        .header(
-                                "Content-Type",
-                                "application/json"
-                        )
-                        .PUT(
-                                HttpRequest.BodyPublishers.noBody()
-                        )
-                        .build();
-
-        HttpResponse<String> response =
-                httpClient.send(
-                        request,
-                        HttpResponse.BodyHandlers.ofString()
-                );
-
-        if (response.statusCode() < 200
-                || response.statusCode() >= 300) {
-
-            throw new RuntimeException(
-                    "Could not mark notification as read. HTTP "
-                            + response.statusCode()
-            );
-        }
-    }
-    private void sendNotificationToBackend(
-            Long recipientId,
-            String title,
-            String message) throws Exception {
-
-        String json =
-                "{"
-                        + "\"recipientId\":"
-                        + recipientId
-                        + ","
-                        + "\"title\":\""
-                        + escapeJson(title)
-                        + "\","
-                        + "\"message\":\""
-                        + escapeJson(message)
-                        + "\""
-                        + "}";
-
-        HttpRequest request =
-                HttpRequest.newBuilder()
-                        .uri(
-                                URI.create(
-                                        BASE_URL
-                                                + "/notification/send"
-                                )
-                        )
-                        .header(
-                                "Content-Type",
-                                "application/json"
-                        )
-                        .POST(
-                                HttpRequest.BodyPublishers.ofString(
-                                        json
-                                )
-                        )
-                        .build();
-
-        HttpResponse<String> response =
-                httpClient.send(
-                        request,
-                        HttpResponse.BodyHandlers.ofString()
-                );
-
-        if (response.statusCode() < 200
-                || response.statusCode() >= 300) {
-
-            throw new RuntimeException(
-                    "Could not send notification. HTTP "
-                            + response.statusCode()
-            );
-        }
-    }
-
-    private String escapeJson(String value) {
-
-        return value
-                .replace("\\", "\\\\")
-                .replace("\"", "\\\"")
-                .replace("\n", "\\n")
-                .replace("\r", "\\r");
     }
 }

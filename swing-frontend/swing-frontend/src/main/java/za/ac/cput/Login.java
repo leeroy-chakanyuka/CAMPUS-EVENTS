@@ -192,22 +192,11 @@ public class Login extends JFrame {
                     MAPPER.readValue(response.body(), LoginResponseDTO.class);
 
             if (loginResponse.isSuccess()) {
-
-                if ("ORGANISER".equalsIgnoreCase(loginResponse.getRole())) {
-                    new OrganiserDashboard(
-                            loginResponse.getAccountId()
-                    ).setVisible(true);
-
-                    this.dispose();
-
-                } else {
-                    JOptionPane.showMessageDialog(
-                            this,
-                            "Logged in as " + loginResponse.getRole()
-                    );
-                }
-
-
+                // TODO: Open dashboard based on loginResponse.getRole()
+                JOptionPane.showMessageDialog(
+                        this,
+                        "Logged in as " + loginResponse.getRole()
+                );
             } else {
                 JOptionPane.showMessageDialog(
                         this,

@@ -49,45 +49,6 @@ public class Event {
         this.faculty = builder.faculty;
         this.tickets = builder.tickets;
     }
-    public void setEventDetails(String title,
-                                String description,
-                                LocalDateTime eventDate,
-                                Integer capacity,
-                                Venue venue) {
-
-        this.title = title;
-        this.description = description;
-        this.eventDate = eventDate;
-        this.capacity = capacity;
-        this.venue = venue;
-        this.open = true;
-
-        if (this.createdAt == null) {
-            this.createdAt = LocalDateTime.now();
-        }
-    }
-    public void assignOrganiserAndFaculty(Organiser organiser,
-                                          Faculty faculty) {
-        this.organiser = organiser;
-        this.faculty = faculty;
-    }
-
-    public void updateDetails(String title,
-                              String description,
-                              LocalDateTime eventDate,
-                              Integer capacity,
-                              Venue venue) {
-
-        this.title = title;
-        this.description = description;
-        this.eventDate = eventDate;
-        this.capacity = capacity;
-        this.venue = venue;
-    }
-
-    public void closeRegistration() {
-        this.open = false;
-    }
 
     public Event() {
 
@@ -155,5 +116,4 @@ public class Event {
                 ", tickets=" + tickets.size() +
                 '}';
     }
-
 }

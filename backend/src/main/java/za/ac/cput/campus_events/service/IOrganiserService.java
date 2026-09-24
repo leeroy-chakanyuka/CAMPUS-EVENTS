@@ -18,19 +18,11 @@ public interface IOrganiserService extends Iservice<Organiser, Long> {
     // ── Registration ──────────────────────────────────────────────────────
     Organiser registerOrganiser(Organiser organiser, Long facultyId);
 
+    // ── Event management — gate is now isActive(), not verificationStatus ─
     Event createEvent(Long organiserId, Event event);
+    Event updateEvent(Long organiserId, Event event);
+    void  closeEvent(Long organiserId, Long eventId);
 
-    List<Event> findEventsByOrganiser(Long organiserId);
-
-    Event updateEvent(Long organiserId,
-                      Long eventId,
-                      String title,
-                      String description,
-                      java.time.LocalDateTime eventDate,
-                      Integer capacity,
-                      za.ac.cput.campus_events.domain.Venue venue);
-
-    void closeEvent(Long organiserId, Long eventId);
-
+    // ── Status management ─────────────────────────────────────────────────
     void updateOrganiserStatus(Long organiserId, boolean active, Long requestingAdminId);
 }
