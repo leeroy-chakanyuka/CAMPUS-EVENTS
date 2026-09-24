@@ -57,22 +57,22 @@ public class Venue {
         private Integer capacity;
         private Address address;
 
-        public Builder id(Long id) {
+        public Builder setId(Long id) {
             this.id = id;
             return this;
         }
 
-        public Builder name(String name) {
+        public Builder setName(String name) {
             this.name = name;
             return this;
         }
 
-        public Builder capacity(Integer capacity) {
+        public Builder setCapacity(Integer capacity) {
             this.capacity = capacity;
             return this;
         }
 
-        public Builder address(Address address) {
+        public Builder setAddress(Address address) {
             this.address = address;
             return this;
         }

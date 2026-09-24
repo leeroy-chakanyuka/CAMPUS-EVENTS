@@ -1,13 +1,7 @@
-package src.main.java.za.ac.cput;
-
-
-import com.formdev.flatlaf.FlatLightLaf;
+package za.ac.cput;
 
 import javax.swing.*;
 import java.awt.*;
-<<<<<<<< HEAD:frontend/src/main/java/src/main/java/za/ac/cput/Login.java
-
-========
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -16,7 +10,6 @@ import com.formdev.flatlaf.FlatLightLaf;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import za.ac.cput.DTO.LoginRequestDTO;
 import za.ac.cput.DTO.LoginResponseDTO;
->>>>>>>> 3910e098ee96ddd014a3a56a0d2d920a85fa89af:swing-frontend/swing-frontend/src/main/java/za/ac/cput/Login.java
 
 public class Login extends JFrame {
 

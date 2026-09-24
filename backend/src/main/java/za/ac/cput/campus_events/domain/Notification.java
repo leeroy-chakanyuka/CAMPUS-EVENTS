@@ -31,6 +31,9 @@ public class Notification {
     // Getters
     public Long getId() { return id; }
     public String getMessage() { return message; }
+    public boolean isRead() { return read; }
+    public Long getRecipientId() { return recipientId; }
+    public String getRecipientType() { return recipientType; }
 
     public LocalDateTime getCreatedAt() { return createdAt; }
 
@@ -43,7 +46,14 @@ public class Notification {
 
     @Override
     public String toString() {
-        return STR."Notification{id=\{id}, message='\{message}', read=\{read}, createdAt=\{createdAt}, recipientId=\{recipientId}, recipientType='\{recipientType}'}";
+        return "Notification{" +
+                "id=" + id +
+                ", message='" + message + '\'' +
+                ", read=" + read +
+                ", createdAt=" + createdAt +
+                ", recipientId=" + recipientId +
+                ", recipientType='" + recipientType + '\'' +
+                '}';
     }
 
     public static class Builder {

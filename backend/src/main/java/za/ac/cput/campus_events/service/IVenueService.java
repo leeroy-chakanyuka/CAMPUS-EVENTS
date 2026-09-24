@@ -2,11 +2,17 @@ package za.ac.cput.campus_events.service;
 
 import za.ac.cput.campus_events.domain.Venue;
 import java.util.List;
+import java.util.Optional;
 
 public interface IVenueService {
-    Venue create(Venue venue);
-    Venue update(Long id, Venue venue);
-    void delete(Long id);
-    Venue findById(Long id);
+    // Basic CRUD
+    Venue save(Venue venue);
+    Optional<Venue> findById(Long id);
     List<Venue> findAll();
+    void deleteById(Long id);
+
+    // Custom queries
+    List<Venue> findByName(String name);
+    List<Venue> findByCapacityGreaterThan(int capacity);
+    List<Venue> findByCity(String city);
 }

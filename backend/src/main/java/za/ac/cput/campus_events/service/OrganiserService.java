@@ -113,12 +113,6 @@ public class OrganiserService implements IOrganiserService {
 
     @Override
     public void closeEvent(Long organiserId, Long eventId) {
-<<<<<<< HEAD
-
-    }
-
-    public boolean existsByEmail(String email) {
-=======
         Organiser organiser = organiserRepository.findById(organiserId)
                 .orElseThrow(() -> new RuntimeException(
                         "Organiser not found: " + organiserId));
@@ -133,7 +127,6 @@ public class OrganiserService implements IOrganiserService {
                         "Event not found: " + eventId));
 
         eventRepository.save(event);
->>>>>>> 3910e098ee96ddd014a3a56a0d2d920a85fa89af
     }
 
     @Override

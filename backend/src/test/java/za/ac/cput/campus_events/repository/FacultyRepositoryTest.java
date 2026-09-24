@@ -33,17 +33,9 @@ class FacultyRepositoryTest {
                 .build();
 
         faculty = new Faculty.Builder()
-<<<<<<< HEAD
-                .name("Faculty of Engineering")
-                .status("ACTIVE")
-                .contactEmail("engineering@cput.ac.za")
-                .createdByAdminId(1L)
-                .createdAt(LocalDateTime.now())
-=======
                 .setName("Faculty of Engineering")
                 .setEmail("engineering@cput.ac.za")
                 .setCreatedByAdmin(admin)
->>>>>>> 3910e098ee96ddd014a3a56a0d2d920a85fa89af
                 .build();
 
     }
