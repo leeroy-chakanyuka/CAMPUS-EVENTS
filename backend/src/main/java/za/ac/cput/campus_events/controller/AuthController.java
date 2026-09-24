@@ -2,6 +2,8 @@ package za.ac.cput.campus_events.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import za.ac.cput.campus_events.DTO.LoginRequestDTO;
+import za.ac.cput.campus_events.DTO.LoginResponseDTO;
 import za.ac.cput.campus_events.DTO.RegisterRequestDTO;
 import za.ac.cput.campus_events.DTO.RegisterResponseDTO;
 import za.ac.cput.campus_events.DTO.ResendRequestDTO;
@@ -34,5 +36,10 @@ public class AuthController {
     @PostMapping("/resend")
     public RegisterResponseDTO resend(@RequestBody ResendRequestDTO request) {
         return authService.resend(request);
+    }
+
+    @PostMapping("/login")
+    public LoginResponseDTO login(@RequestBody LoginRequestDTO request) {
+        return authService.login(request);
     }
 }
