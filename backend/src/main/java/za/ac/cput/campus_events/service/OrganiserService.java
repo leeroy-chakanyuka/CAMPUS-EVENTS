@@ -63,7 +63,6 @@ public class OrganiserService implements IOrganiserService {
 
     @Override
     public Event createEvent(Long organiserId, Event event) {
-
         Organiser organiser = organiserRepository.findById(organiserId)
                 .orElseThrow(() -> new RuntimeException(
                         "Organiser not found: " + organiserId));
@@ -74,7 +73,6 @@ public class OrganiserService implements IOrganiserService {
         }
 
         Faculty faculty = organiser.getFaculty();
-
         if (faculty == null) {
             throw new RuntimeException(
                     "Faculty not found for organiser: " + organiserId);
@@ -85,29 +83,11 @@ public class OrganiserService implements IOrganiserService {
                     "Cannot create event — faculty is not active");
         }
 
-        event.assignOrganiserAndFaculty(organiser, faculty);
-
         return eventRepository.save(event);
     }
 
-    public List<Event> findEventsByOrganiser(Long organiserId) {
-
-        organiserRepository.findById(organiserId)
-                .orElseThrow(() -> new RuntimeException(
-                        "Organiser not found: " + organiserId));
-
-        return eventRepository.findByOrganiserId(organiserId);
-    }
-
     @Override
-    public Event updateEvent(Long organiserId,
-                             Long eventId,
-                             String title,
-                             String description,
-                             java.time.LocalDateTime eventDate,
-                             Integer capacity,
-                             za.ac.cput.campus_events.domain.Venue venue) {
-
+    public Event updateEvent(Long organiserId, Event event) {
         Organiser organiser = organiserRepository.findById(organiserId)
                 .orElseThrow(() -> new RuntimeException(
                         "Organiser not found: " + organiserId));
@@ -118,7 +98,6 @@ public class OrganiserService implements IOrganiserService {
         }
 
         Faculty faculty = organiser.getFaculty();
-
         if (faculty == null) {
             throw new RuntimeException(
                     "Faculty not found for organiser: " + organiserId);
@@ -129,30 +108,11 @@ public class OrganiserService implements IOrganiserService {
                     "Cannot update event — faculty is not active");
         }
 
-        Event event = eventRepository.findById(eventId)
-                .orElseThrow(() -> new RuntimeException(
-                        "Event not found: " + eventId));
-
-        if (event.getOrganiser() == null ||
-                !event.getOrganiser().getId().equals(organiserId)) {
-
-            throw new RuntimeException(
-                    "You are not authorised to update this event");
-        }
-
-        event.updateDetails(
-                title,
-                description,
-                eventDate,
-                capacity,
-                venue
-        );
-
         return eventRepository.save(event);
     }
+
     @Override
     public void closeEvent(Long organiserId, Long eventId) {
-
         Organiser organiser = organiserRepository.findById(organiserId)
                 .orElseThrow(() -> new RuntimeException(
                         "Organiser not found: " + organiserId));
@@ -166,17 +126,9 @@ public class OrganiserService implements IOrganiserService {
                 .orElseThrow(() -> new RuntimeException(
                         "Event not found: " + eventId));
 
-        if (event.getOrganiser() == null ||
-                !event.getOrganiser().getId().equals(organiserId)) {
-
-            throw new RuntimeException(
-                    "You are not authorised to close this event");
-        }
-
-        event.closeRegistration();
-
         eventRepository.save(event);
     }
+
     @Override
     public void updateOrganiserStatus(Long organiserId, boolean active,
                                       Long requestingAdminId) {

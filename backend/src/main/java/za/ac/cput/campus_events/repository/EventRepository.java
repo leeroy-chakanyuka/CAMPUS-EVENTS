@@ -9,9 +9,9 @@ import java.util.List;
 @Repository
 public interface EventRepository extends JpaRepository<Event, Long> {
 
+    // Find all events linked to a specific Faculty
     List<Event> findByFacultyId(Long facultyId);
 
+    // Find all events that are currently open
     List<Event> findByOpenTrue();
-
-    List<Event> findByOrganiserId(Long organiserId);
 }
