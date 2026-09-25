@@ -8,91 +8,76 @@ import java.time.LocalDateTime;
 public class Notification {
 
     @Id
-    private String Id;
-
-    @Column(nullable = false)
-    private String title;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     @Column(nullable = false, length = 1000)
     private String message;
 
     @Column(name = "is_read")
-    private boolean read;
+    private boolean read = false;
 
     @Column(nullable = false)
     private LocalDateTime createdAt;
 
-    @ManyToOne
-    @JoinColumn(name = "student_id")
-    private Student student;
+    @Column(nullable = false)
+    private Long recipientId;
 
-    protected Notification() {
-    }
+    @Column(nullable = false)
+    private String recipientType; // "STUDENT" or "ORGANISER"
+
+    protected Notification() {}
 
     private Notification(Builder builder) {
-        this.Id = builder.Id;
-        this.title = builder.title;
+        this.id = builder.id;
         this.message = builder.message;
         this.read = builder.read;
         this.createdAt = builder.createdAt;
-      //  this.student = builder.student;
+        this.recipientId = builder.recipientId;
+        this.recipientType = builder.recipientType;
     }
 
-    public String getId() {
-        return Id;
-    }
+    // Getters
+    public Long getId() { return id; }
+    public String getMessage() { return message; }
+    public boolean isRead() { return read; }
+    public LocalDateTime getCreatedAt() { return createdAt; }
+    public Long getRecipientId() { return recipientId; }
+    public String getRecipientType() { return recipientType; }
 
-    public String getTitle() {
-        return title;
-    }
+    // Setters
+    public void setMessage(String message) { this.message = message; }
+    public void setRead(boolean read) { this.read = read; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+    public void setRecipientId(Long recipientId) { this.recipientId = recipientId; }
+    public void setRecipientType(String recipientType) { this.recipientType = recipientType; }
 
-    public String getMessage() {
-        return message;
-    }
-
-    public boolean getRead() {
-        return read;
-    }
-
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-    public Student getStudent() {
-        return student;
-    }
-
-    public void markAsRead() {
-        this.read = true;
-    }
+    // Helper
+    public void markAsRead() { this.read = true; }
 
     @Override
     public String toString() {
         return "Notification{" +
-                "notificationId='" + Id + '\'' +
-                ", title='" + title + '\'' +
+                "id=" + id +
                 ", message='" + message + '\'' +
                 ", read=" + read +
                 ", createdAt=" + createdAt +
+                ", recipientId=" + recipientId +
+                ", recipientType='" + recipientType + '\'' +
                 '}';
     }
 
-    public static class Builder {
 
-        private String Id;
-        private String title;
+    public static class Builder {
+        private Long id;
         private String message;
         private boolean read;
         private LocalDateTime createdAt;
-       // private Student student;
+        private Long recipientId;
+        private String recipientType;
 
-        public Builder setId(String Id) {
-            this.Id = Id;
-            return this;
-        }
-
-        public Builder setTitle(String title) {
-            this.title = title;
+        public Builder setId(Long id) {
+            this.id = id;
             return this;
         }
 
@@ -101,7 +86,7 @@ public class Notification {
             return this;
         }
 
-        public Builder setRead(Boolean read) {
+        public Builder setRead(boolean read) {
             this.read = read;
             return this;
         }
@@ -110,19 +95,24 @@ public class Notification {
             this.createdAt = createdAt;
             return this;
         }
-/*
-        public Builder setStudent(Student student) {
-            this.student = student;
+
+        public Builder setRecipientId(Long recipientId) {
+            this.recipientId = recipientId;
             return this;
         }
-*/
+
+        public Builder setRecipientType(String recipientType) {
+            this.recipientType = recipientType;
+            return this;
+        }
+
         public Builder copy(Notification notification) {
-            this.Id = notification.Id;
-            this.title = notification.title;
+            this.id = notification.id;
             this.message = notification.message;
             this.read = notification.read;
             this.createdAt = notification.createdAt;
-            //this.student = notification.student;
+            this.recipientId = notification.recipientId;
+            this.recipientType = notification.recipientType;
             return this;
         }
 
