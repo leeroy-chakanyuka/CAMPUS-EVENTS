@@ -215,6 +215,76 @@ public class Login extends JFrame {
                     JOptionPane.ERROR_MESSAGE
             );
         }
+        /*
+        i also added handling point for the login
+        private void handleLogin() {
+    try {
+        LoginRequestDTO dto = new LoginRequestDTO();
+        dto.setRole(getSelectedRole());
+        dto.setEmail(txtIdentifier.getText().trim());
+        dto.setPassword(new String(pwdPassword.getPassword()));
+
+        String jsonBody = MAPPER.writeValueAsString(dto);
+
+        HttpClient client = HttpClient.newHttpClient();
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(BASE_URL + "/api/auth/login"))
+                .header("Content-Type", "application/json")
+                .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
+                .build();
+
+        HttpResponse<String> response =
+                client.send(request, HttpResponse.BodyHandlers.ofString());
+
+        LoginResponseDTO loginResponse =
+                MAPPER.readValue(response.body(), LoginResponseDTO.class);
+
+        if (loginResponse.isSuccess()) {
+            this.dispose();
+
+            // ── Open the correct dashboard based on role ──────────────
+            SwingUtilities.invokeLater(() -> {
+                switch (loginResponse.getRole()) {
+                    case "ADMIN":
+                        new AdminDashboard().setVisible(true);
+                        break;
+                    case "ORGANISER":
+                        // new OrganiserDashboard().setVisible(true);
+                        JOptionPane.showMessageDialog(null,
+                            "Welcome Organiser — dashboard coming soon.");
+                        break;
+                    case "STUDENT":
+                        // new StudentDashboard().setVisible(true);
+                        JOptionPane.showMessageDialog(null,
+                            "Welcome Student — dashboard coming soon.");
+                        break;
+                    default:
+                        JOptionPane.showMessageDialog(null,
+                            "Unknown role: " + loginResponse.getRole());
+                }
+            });
+
+        } else {
+            JOptionPane.showMessageDialog(
+                    this,
+                    loginResponse.getMessage(),
+                    "Login failed",
+                    JOptionPane.ERROR_MESSAGE
+            );
+            pwdPassword.setText("");
+        }
+
+    } catch (Exception ex) {
+        JOptionPane.showMessageDialog(
+                this,
+                "Could not reach the backend: " + ex.getMessage(),
+                "Connection error",
+                JOptionPane.ERROR_MESSAGE
+        );
+    }
+}
+
+         */
     }
 
     public static void main(String[] args) {
