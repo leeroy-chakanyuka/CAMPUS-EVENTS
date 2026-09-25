@@ -11,6 +11,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
+ import org.springframework.data.jpa.repository.JpaRepository;
+
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -35,6 +37,7 @@ class FacultyRepositoryTest {
                 .setEmail("engineering@cput.ac.za")
                 .setCreatedByAdmin(admin)
                 .build();
+
     }
 
     @Test

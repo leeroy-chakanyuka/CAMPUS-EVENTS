@@ -1,4 +1,4 @@
-package za.ac.cput.campus_events.DTO;
+package za.ac.cput.DTO;
 
 public class TicketRequestDTO {
     private Long eventId;
