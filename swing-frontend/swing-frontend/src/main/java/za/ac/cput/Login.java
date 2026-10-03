@@ -168,6 +168,10 @@ public class Login extends JFrame {
         return "STUDENT";
     }
 
+    private boolean isReadOnly(LoginResponseDTO loginResponse) {
+        return Boolean.TRUE.equals(loginResponse.getReadOnly());
+    }
+
     private void handleLogin() {
         try {
             LoginRequestDTO dto = new LoginRequestDTO();
@@ -197,7 +201,7 @@ public class Login extends JFrame {
                         JOptionPane.showMessageDialog(this, "Login succeeded but no organiser account ID was returned.", "Login error", JOptionPane.ERROR_MESSAGE);
                         return;
                     }
-                    new OrganiserDashboard(loginResponse.getAccountId()).setVisible(true);
+                    new OrganiserDashboard(loginResponse.getAccountId(), isReadOnly(loginResponse)).setVisible(true);
                     this.dispose();
                 } else {
                     JOptionPane.showMessageDialog(

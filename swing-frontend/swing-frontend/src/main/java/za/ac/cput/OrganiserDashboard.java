@@ -8,6 +8,7 @@ import java.awt.*;
 public class OrganiserDashboard extends JFrame {
 
     private final Long organiserId;
+    private final boolean readOnly;
 
     private CardLayout cardLayout;
     private JPanel contentPanel;
@@ -21,11 +22,16 @@ public class OrganiserDashboard extends JFrame {
     private JButton btnLogout;
 
     public OrganiserDashboard() {
-        this(null);
+        this(null, true);
     }
 
     public OrganiserDashboard(Long organiserId) {
+        this(organiserId, true);
+    }
+
+    public OrganiserDashboard(Long organiserId, boolean readOnly) {
         this.organiserId = organiserId;
+        this.readOnly = readOnly;
         setTitle("Campus Events - Organiser Dashboard");
         setSize(1200, 700);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -36,9 +42,23 @@ public class OrganiserDashboard extends JFrame {
 
         add(buildNavigation(), BorderLayout.WEST);
         add(buildContent(), BorderLayout.CENTER);
+        if (readOnly) {
+            add(buildApprovalBanner(), BorderLayout.NORTH);
+        }
 
         cardLayout.show(contentPanel, "dashboard");
         setActiveNav(btnDashboard);
+    }
+
+    private JPanel buildApprovalBanner() {
+        JPanel banner = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        banner.setBackground(new Color(255, 243, 205));
+        banner.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(222, 170, 12)));
+        JLabel label = new JLabel("Waiting for admin approval — you can browse, but creating or editing events is disabled.");
+        label.setFont(new Font("Arial", Font.BOLD, 13));
+        label.setForeground(new Color(102, 60, 0));
+        banner.add(label);
+        return banner;
     }
 
     private void setWindowIcon() {
@@ -114,8 +134,8 @@ public class OrganiserDashboard extends JFrame {
         contentPanel = new JPanel(cardLayout);
 
         contentPanel.add(buildDashboardPanel(), "dashboard");
-        contentPanel.add(new MyEventsPanel(organiserId), "myEvents");
-        contentPanel.add(new OrganiserNotificationsPanel(), "notifications");
+        contentPanel.add(new MyEventsPanel(organiserId, readOnly), "myEvents");
+        contentPanel.add(new OrganiserNotificationsPanel(organiserId), "notifications");
 
         return contentPanel;
     }

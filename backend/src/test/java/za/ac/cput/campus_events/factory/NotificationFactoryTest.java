@@ -11,74 +11,26 @@ class NotificationFactoryTest {
     void createNotificationSuccessfully() {
 
         Notification notification = NotificationFactory.createNotification(
-                "N001",
-                "Registration Successful",
-                "You have successfully registered."
+                "You have successfully registered.",
+                1L,
+                "STUDENT"
         );
 
         assertNotNull(notification);
-        assertEquals("N001", notification.getId());
-        assertEquals("Registration Successful", notification.getTitle());
         assertEquals("You have successfully registered.", notification.getMessage());
-        assertFalse(notification.getRead());
+        assertEquals(1L, notification.getRecipientId());
+        assertEquals("STUDENT", notification.getRecipientType());
+        assertFalse(notification.isRead());
         assertNotNull(notification.getCreatedAt());
-    }
-
-    @Test
-    void shouldReturnNullWhenIdIsNull() {
-
-        Notification notification = NotificationFactory.createNotification(
-                null,
-                "Registration Successful",
-                "You have successfully registered."
-        );
-
-        assertNull(notification);
-    }
-
-    @Test
-    void shouldReturnNullWhenIdIsBlank() {
-
-        Notification notification = NotificationFactory.createNotification(
-                "",
-                "Registration Successful",
-                "You have successfully registered."
-        );
-
-        assertNull(notification);
-    }
-
-    @Test
-    void shouldReturnNullWhenTitleIsNull() {
-
-        Notification notification = NotificationFactory.createNotification(
-                "N001",
-                null,
-                "You have successfully registered."
-        );
-
-        assertNull(notification);
-    }
-
-    @Test
-    void shouldReturnNullWhenTitleIsBlank() {
-
-        Notification notification = NotificationFactory.createNotification(
-                "N001",
-                "",
-                "You have successfully registered."
-        );
-
-        assertNull(notification);
     }
 
     @Test
     void shouldReturnNullWhenMessageIsNull() {
 
         Notification notification = NotificationFactory.createNotification(
-                "N001",
-                "Registration Successful",
-                null
+                null,
+                1L,
+                "STUDENT"
         );
 
         assertNull(notification);
@@ -88,8 +40,44 @@ class NotificationFactoryTest {
     void shouldReturnNullWhenMessageIsBlank() {
 
         Notification notification = NotificationFactory.createNotification(
-                "N001",
-                "Registration Successful",
+                "",
+                1L,
+                "STUDENT"
+        );
+
+        assertNull(notification);
+    }
+
+    @Test
+    void shouldReturnNullWhenRecipientIdIsNull() {
+
+        Notification notification = NotificationFactory.createNotification(
+                "You have successfully registered.",
+                null,
+                "STUDENT"
+        );
+
+        assertNull(notification);
+    }
+
+    @Test
+    void shouldReturnNullWhenRecipientTypeIsNull() {
+
+        Notification notification = NotificationFactory.createNotification(
+                "You have successfully registered.",
+                1L,
+                null
+        );
+
+        assertNull(notification);
+    }
+
+    @Test
+    void shouldReturnNullWhenRecipientTypeIsBlank() {
+
+        Notification notification = NotificationFactory.createNotification(
+                "You have successfully registered.",
+                1L,
                 ""
         );
 

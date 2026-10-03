@@ -127,6 +127,15 @@ public class PromoCode {
                 '}';
     }
 
+    public boolean isExpired() {
+        return false;
+    }
+
+    public double getDiscountPercentage() {
+        return 0;
+    }
+
+
     public static class Builder {
 
         private String id;

@@ -1,5 +1,7 @@
 package za.ac.cput.campus_events.service;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import za.ac.cput.campus_events.domain.Event;
 import za.ac.cput.campus_events.domain.Faculty;
@@ -12,37 +14,52 @@ import za.ac.cput.campus_events.repository.VenueRepository;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class OrganiserService implements IOrganiserService {
+
+    private static final Logger log = LoggerFactory.getLogger(OrganiserService.class);
 
     private final OrganiserRepository organiserRepository;
     private final FacultyRepository facultyRepository;
     private final EventRepository eventRepository;
     private final VenueRepository venueRepository;
+    private final INotificationService notificationService;
 
     public OrganiserService(OrganiserRepository organiserRepository,
                             FacultyRepository facultyRepository,
                             EventRepository eventRepository,
-                            VenueRepository venueRepository) {
+                            VenueRepository venueRepository,
+                            INotificationService notificationService) {
         this.organiserRepository = organiserRepository;
         this.facultyRepository = facultyRepository;
         this.eventRepository = eventRepository;
         this.venueRepository = venueRepository;
+        this.notificationService = notificationService;
     }
 
     @Override
-    public Organiser save(Organiser organiser) { return organiserRepository.save(organiser); }
+    public Organiser create(Organiser organiser) { return organiserRepository.save(organiser); }
 
     @Override
-    public Optional<Organiser> findById(Long id) { return organiserRepository.findById(id); }
+    public Organiser read(Long id) {
+        return organiserRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Organiser not found: " + id));
+    }
 
     @Override
     public List<Organiser> findAll() { return organiserRepository.findAll(); }
 
     @Override
-    public void deleteById(Long id) { organiserRepository.deleteById(id); }
+    public Organiser update(Organiser organiser) { return organiserRepository.save(organiser); }
+
+    @Override
+    public void delete(Long id) {
+        if (!eventRepository.findByOrganiserId(id).isEmpty()) {
+            throw new RuntimeException("Cannot delete organiser with events — suspend instead");
+        }
+        organiserRepository.deleteById(id);
+    }
 
     @Override
     public Organiser registerOrganiser(Organiser organiser, Long facultyId) {
@@ -74,11 +91,36 @@ public class OrganiserService implements IOrganiserService {
                 .orElseThrow(() -> new RuntimeException("Venue not found: " + venueId));
     }
 
+    private void validateEventDetails(String title, LocalDateTime eventDate,
+                                      Integer capacity, Venue venue) {
+        if (title == null || title.isBlank()) {
+            throw new RuntimeException("Title is required");
+        }
+        if (eventDate == null) {
+            throw new RuntimeException("Date is required");
+        }
+        if (capacity == null || capacity <= 0) {
+            throw new RuntimeException("Capacity must be greater than zero");
+        }
+        if (venue.getCapacity() != null && capacity > venue.getCapacity()) {
+            throw new RuntimeException("Capacity exceeds venue capacity (" + venue.getCapacity() + ")");
+        }
+    }
+
+    private void validateNewEvent(String title, LocalDateTime eventDate,
+                                  Integer capacity, Venue venue) {
+        validateEventDetails(title, eventDate, capacity, venue);
+        if (eventDate.isBefore(LocalDateTime.now())) {
+            throw new RuntimeException("Event date must be in the future");
+        }
+    }
+
     @Override
     public Event createEvent(Long organiserId, String title, String description,
                              LocalDateTime eventDate, Integer capacity, Long venueId) {
         Organiser organiser = requireActiveOrganiser(organiserId);
         Venue venue = requireVenue(venueId);
+        validateNewEvent(title, eventDate, capacity, venue);
 
         Event event = new Event.Builder()
                 .setTitle(title)
@@ -92,7 +134,10 @@ public class OrganiserService implements IOrganiserService {
                 .setFaculty(organiser.getFaculty())
                 .build();
 
-        return eventRepository.save(event);
+        Event saved = eventRepository.save(event);
+        notifyOrganiser(organiserId,
+                "Event '" + saved.getTitle() + "' created — registration is open.");
+        return saved;
     }
 
     @Override
@@ -106,6 +151,10 @@ public class OrganiserService implements IOrganiserService {
         if (existing.getOrganiser() == null || !organiserId.equals(existing.getOrganiser().getId())) {
             throw new RuntimeException("You can only update your own events");
         }
+        if (Boolean.FALSE.equals(existing.isOpen())) {
+            throw new RuntimeException("Cannot edit a closed event");
+        }
+        validateEventDetails(title, eventDate, capacity, venue);
 
         Event updated = new Event(existing, title, description, eventDate, capacity, venue);
         return eventRepository.save(updated);
@@ -122,6 +171,13 @@ public class OrganiserService implements IOrganiserService {
         }
 
         eventRepository.save(new Event(existing, false));
+        notifyOrganiser(organiserId,
+                "Registration closed for '" + existing.getTitle() + "'.");
+    }
+
+    @Override
+    public List<Event> findEventsByOrganiser(Long organiserId) {
+        return eventRepository.findByOrganiserId(organiserId);
     }
 
     @Override
@@ -130,10 +186,16 @@ public class OrganiserService implements IOrganiserService {
         Organiser existing = organiserRepository.findById(organiserId)
                 .orElseThrow(() -> new RuntimeException("Organiser not found: " + organiserId));
         organiserRepository.save(new Organiser(existing, active));
+        notifyOrganiser(organiserId, active
+                ? "Your organiser account was approved — you can now create events."
+                : "Your organiser account was suspended — event management is disabled.");
     }
 
-    @Override public <T> T create(T t) { return null; }
-    @Override public <T> T read(Long id) { return null; }
-    @Override public <T> T update(T t) { return null; }
-    @Override public <T> void delete(T t) { }
+    private void notifyOrganiser(Long organiserId, String message) {
+        try {
+            notificationService.sendNotification(message, organiserId, "ORGANISER");
+        } catch (RuntimeException e) {
+            log.warn("Notification for organiser {} failed: {}", organiserId, e.getMessage());
+        }
+    }
 }

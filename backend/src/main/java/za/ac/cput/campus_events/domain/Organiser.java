@@ -22,7 +22,7 @@ public class Organiser {
     private String role;
     private LocalDateTime createdAt;
 
-    private boolean active = true; // new organisers start active
+    private boolean active = false; // new organisers start pending admin approval
 
     @ManyToOne
     @JoinColumn(name = "faculty_id")

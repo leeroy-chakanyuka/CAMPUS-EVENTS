@@ -1,9 +1,9 @@
 package za.ac.cput.campus_events.service;
 
-public interface Iservice <T, E> {
+public interface Iservice<T, ID> {
 
-    public <T> T create(T t);
-    public <T> T read(Long id);
-    public <T> T update(T t);
-    public <T> void delete(T t);
+    T create(T t);
+    T read(ID id);
+    T update(T t);
+    void delete(ID id);
 }

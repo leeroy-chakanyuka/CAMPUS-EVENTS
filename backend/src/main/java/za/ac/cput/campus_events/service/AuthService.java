@@ -342,6 +342,7 @@ public class AuthService {
             response.setMessage("Login successful.");
             response.setAccountId(student.getId());
             response.setRole("STUDENT");
+            response.setReadOnly(false);
             return response;
         }
 
@@ -359,14 +360,18 @@ public class AuthService {
                 return response;
             }
             if (!organiser.isActive()) {
-                response.setSuccess(false);
-                response.setMessage("Account is disabled.");
+                response.setSuccess(true);
+                response.setMessage("Account is awaiting admin approval.");
+                response.setAccountId(organiser.getId());
+                response.setRole("ORGANISER");
+                response.setReadOnly(true);
                 return response;
             }
             response.setSuccess(true);
             response.setMessage("Login successful.");
             response.setAccountId(organiser.getId());
             response.setRole("ORGANISER");
+            response.setReadOnly(false);
             return response;
         }
 

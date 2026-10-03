@@ -4,13 +4,10 @@ import za.ac.cput.campus_events.domain.Event;
 import za.ac.cput.campus_events.domain.Organiser;
 
 import java.util.List;
-import java.util.Optional;
 
 public interface IOrganiserService extends Iservice<Organiser, Long> {
-    Organiser save(Organiser organiser);
-    Optional<Organiser> findById(Long id);
+
     List<Organiser> findAll();
-    void deleteById(Long id);
 
     Organiser registerOrganiser(Organiser organiser, Long facultyId);
 
@@ -19,6 +16,8 @@ public interface IOrganiserService extends Iservice<Organiser, Long> {
     Event updateEvent(Long organiserId, Long eventId, String title, String description,
                       java.time.LocalDateTime eventDate, Integer capacity, Long venueId);
     void closeEvent(Long organiserId, Long eventId);
+
+    List<Event> findEventsByOrganiser(Long organiserId);
 
     void updateOrganiserStatus(Long organiserId, boolean active, Long requestingAdminId);
 }

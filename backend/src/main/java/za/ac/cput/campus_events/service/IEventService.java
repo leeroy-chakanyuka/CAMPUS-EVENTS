@@ -8,5 +8,7 @@ public interface IEventService {
 
     // Cancel an event
     Event cancelEvent(Long eventId);
+
+    void forceCancelEvent(Long id, Long adminId);
 }
 
