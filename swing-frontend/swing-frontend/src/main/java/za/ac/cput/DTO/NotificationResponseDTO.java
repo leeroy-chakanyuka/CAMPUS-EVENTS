@@ -1,15 +1,16 @@
 // za.ac.cput.dto.notification.NotificationResponseDTO.java
 package za.ac.cput.DTO;
 
-import java.time.LocalDateTime;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class NotificationResponseDTO {
     private Long id;
     private String message;
     private boolean read;
     private Long recipientId;
     private String recipientType;
-    private LocalDateTime createdAt;
+    private String createdAt;
 
     // Getters and setters
     public Long getId() { return id; }
@@ -27,6 +28,6 @@ public class NotificationResponseDTO {
     public String getRecipientType() { return recipientType; }
     public void setRecipientType(String recipientType) { this.recipientType = recipientType; }
 
-    public LocalDateTime getCreatedAt() { return createdAt; }
-    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+    public String getCreatedAt() { return createdAt; }
+    public void setCreatedAt(String createdAt) { this.createdAt = createdAt; }
 }

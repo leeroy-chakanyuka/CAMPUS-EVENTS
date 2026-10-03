@@ -59,8 +59,11 @@ public class TableButtonColumn extends AbstractCellEditor implements TableCellRe
     }
 
     private void fireClick(ActionEvent e) {
-        onClick.accept(editingRow);
+        // Stop editing first: JTable commits the editor value on stop, so the
+        // model must still hold the pre-click text here. The action below is
+        // then free to rewrite the row without being stomped afterwards.
         fireEditingStopped();
+        onClick.accept(editingRow);
     }
 
     private boolean isTerminal(Object value) {

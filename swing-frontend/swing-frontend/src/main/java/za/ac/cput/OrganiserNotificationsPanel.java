@@ -1,13 +1,32 @@
 package za.ac.cput;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import za.ac.cput.DTO.NotificationResponseDTO;
+
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.util.ArrayList;
+import java.util.List;
 
 public class OrganiserNotificationsPanel extends JPanel {
+
+    private static final String BASE_URL = "http://localhost:8080";
+    private static final ObjectMapper MAPPER = new ObjectMapper();
+    private static final HttpClient HTTP = HttpClient.newHttpClient();
+    private static final int RELOAD_INTERVAL_MS = 7 * 60 * 1000;
+
+    private final Long organiserId;
+    private final List<Long> notificationIds = new ArrayList<>();
+    private final Timer reloadTimer;
 
     private JTable inboxTable;
     private DefaultTableModel inboxModel;
@@ -18,16 +37,19 @@ public class OrganiserNotificationsPanel extends JPanel {
     private JLabel detailMessage;
     private JLabel detailReceived;
     private JLabel detailStatus;
-    private JButton detailMarkAsRead;
     private int openRow = -1;
 
     private static final Color CPUT_BLUE = new Color(0, 51, 102);
-    private static final Color CPUT_RED = new Color(190, 30, 45);
     private static final Color LIGHT_BLUE = new Color(235, 242, 250);
     private static final Color DARK_TEXT = new Color(40, 40, 40);
     private static final Color UNREAD_BG = new Color(255, 249, 230);
 
     public OrganiserNotificationsPanel() {
+        this(null);
+    }
+
+    public OrganiserNotificationsPanel(Long organiserId) {
+        this.organiserId = organiserId;
         setLayout(new BorderLayout());
         setBackground(Color.WHITE);
         setBorder(new EmptyBorder(20, 20, 20, 20));
@@ -40,7 +62,10 @@ public class OrganiserNotificationsPanel extends JPanel {
         cardHolder.add(buildDetailCard(), "detail");
 
         add(cardHolder, BorderLayout.CENTER);
-        seedInbox();
+        SwingUtilities.invokeLater(this::loadInbox);
+        reloadTimer = new Timer(RELOAD_INTERVAL_MS, e -> loadInbox());
+        reloadTimer.setRepeats(true);
+        reloadTimer.start();
         cardLayout.show(cardHolder, "inbox");
     }
 
@@ -72,11 +97,8 @@ public class OrganiserNotificationsPanel extends JPanel {
     }
 
     private void handleRefresh() {
-        // TODO: GET /notification/organiser/{recipientId} here — refetch instead of reseeding
         openRow = -1;
-        inboxModel.setRowCount(0);
-        seedInbox();
-        inboxTable.repaint();
+        loadInbox();
     }
 
     private JScrollPane buildInboxTable() {
@@ -166,63 +188,100 @@ public class OrganiserNotificationsPanel extends JPanel {
         detailMessage.setAlignmentX(Component.LEFT_ALIGNMENT);
         detailMessage.setBorder(new EmptyBorder(20, 0, 20, 0));
 
-        detailMarkAsRead = new JButton("Mark as read");
-        detailMarkAsRead.setBackground(CPUT_RED);
-        detailMarkAsRead.setForeground(Color.WHITE);
-        detailMarkAsRead.setFocusPainted(false);
-        detailMarkAsRead.setFont(new Font("Arial", Font.BOLD, 13));
-        detailMarkAsRead.setAlignmentX(Component.LEFT_ALIGNMENT);
-        detailMarkAsRead.addActionListener(e -> {
-            if (openRow >= 0) {
-                handleMarkAsRead(openRow);
-                refreshDetailView();
-            }
-        });
-
         card.add(backButton);
         card.add(Box.createVerticalStrut(24));
         card.add(detailStatus);
         card.add(Box.createVerticalStrut(4));
         card.add(detailReceived);
         card.add(detailMessage);
-        card.add(detailMarkAsRead);
         return card;
     }
 
     private void openNotification(int row) {
-        openRow = row;
-        refreshDetailView();
+        if (row < 0 || row >= notificationIds.size()) return;
+        String message = inboxModel.getValueAt(row, 0).toString();
+        String received = inboxModel.getValueAt(row, 1).toString();
+        if (!pushReadToServer(row)) return;
+        inboxModel.setValueAt("Read", row, 2);
+        inboxModel.setValueAt("—", row, 3);
+        inboxTable.repaint();
+        openRow = -1;
+        detailMessage.setText("<html><body style='width:400px'>" + message + "</body></html>");
+        detailReceived.setText("Received " + received);
+        detailStatus.setText("Read");
+        detailStatus.setForeground(new Color(60, 150, 90));
         cardLayout.show(cardHolder, "detail");
     }
 
-    private void refreshDetailView() {
-        if (openRow < 0) return;
-        String message = inboxModel.getValueAt(openRow, 0).toString();
-        String received = inboxModel.getValueAt(openRow, 1).toString();
-        String status = inboxModel.getValueAt(openRow, 2).toString();
-
-        detailMessage.setText("<html><body style='width:400px'>" + message + "</body></html>");
-        detailReceived.setText("Received " + received);
-        detailStatus.setText(status);
-        detailStatus.setForeground(status.equals("Unread") ? CPUT_RED : new Color(60, 150, 90));
-        detailMarkAsRead.setVisible(status.equals("Unread"));
-    }
-
     private void handleMarkAsRead(int row) {
-        // TODO: PUT /notification/{id}/read here — path variable, same as GET /event/{id}
-        String currentStatus = inboxModel.getValueAt(row, 2).toString();
-        if (currentStatus.equals("Read")) return;
+        if (!pushReadToServer(row)) return;
         inboxModel.setValueAt("Read", row, 2);
         inboxModel.setValueAt("—", row, 3);
         inboxTable.repaint();
     }
 
-    private void seedInbox() {
-        // TODO: GET /notification/organiser/{recipientId} here — path variable
-        // response is List<NotificationResponseDTO>: id, message, recipientId, recipientType, read, createdAt
-        // Column mapping: message -> col 0, createdAt -> col 1, read?"Read":"Unread" -> col 2, read?"—":"Mark as read" -> col 3
-        inboxModel.addRow(new Object[]{"Event registrations opened", "2 min ago", "Unread", "Mark as read"});
-        inboxModel.addRow(new Object[]{"New event reminder", "1 hour ago", "Unread", "Mark as read"});
-        inboxModel.addRow(new Object[]{"System notification", "Yesterday", "Read", "—"});
+    private boolean pushReadToServer(int row) {
+        String currentStatus = inboxModel.getValueAt(row, 2).toString();
+        if (currentStatus.equals("Read")) return true;
+        if (row < 0 || row >= notificationIds.size()) return false;
+        try {
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(BASE_URL + "/notification/" + notificationIds.get(row) + "/read"))
+                    .header("Content-Type", "application/json")
+                    .PUT(HttpRequest.BodyPublishers.ofString(""))
+                    .build();
+            HttpResponse<String> response = HTTP.send(request, HttpResponse.BodyHandlers.ofString());
+            if (response.statusCode() / 100 != 2) {
+                showError(response.body());
+                return false;
+            }
+        } catch (Exception ex) {
+            showError("Could not mark notification as read: " + ex.getMessage());
+            return false;
+        }
+        return true;
+    }
+
+    private void loadInbox() {
+        inboxModel.setRowCount(0);
+        notificationIds.clear();
+        if (organiserId == null) return;
+        try {
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(BASE_URL + "/notification/organiser/" + organiserId))
+                    .GET()
+                    .build();
+            HttpResponse<String> response = HTTP.send(request, HttpResponse.BodyHandlers.ofString());
+            if (response.statusCode() / 100 != 2) {
+                showError(response.body());
+                return;
+            }
+            List<NotificationResponseDTO> notifications = MAPPER.readValue(
+                    response.body(), new TypeReference<List<NotificationResponseDTO>>() {});
+            for (NotificationResponseDTO notification : notifications) {
+                notificationIds.add(notification.getId());
+                inboxModel.addRow(new Object[]{
+                        notification.getMessage(),
+                        displayDate(notification.getCreatedAt()),
+                        notification.isRead() ? "Read" : "Unread",
+                        notification.isRead() ? "—" : "Mark as read"
+                });
+            }
+        } catch (Exception ex) {
+            showError("Could not load notifications: " + ex.getMessage());
+        }
+        inboxTable.repaint();
+    }
+
+    private static String displayDate(String dateTime) {
+        if (dateTime == null) return "";
+        String cleaned = dateTime.replace('T', ' ');
+        return cleaned.length() >= 16 ? cleaned.substring(0, 16) : cleaned;
+    }
+
+    private void showError(String message) {
+        SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(
+                this, message == null || message.isBlank() ? "Request failed" : message,
+                "Organiser request failed", JOptionPane.ERROR_MESSAGE));
     }
 }

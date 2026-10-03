@@ -135,7 +135,7 @@ public class OrganiserDashboard extends JFrame {
 
         contentPanel.add(buildDashboardPanel(), "dashboard");
         contentPanel.add(new MyEventsPanel(organiserId, readOnly), "myEvents");
-        contentPanel.add(new OrganiserNotificationsPanel(), "notifications");
+        contentPanel.add(new OrganiserNotificationsPanel(organiserId), "notifications");
 
         return contentPanel;
     }
