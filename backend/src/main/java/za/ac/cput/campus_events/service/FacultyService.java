@@ -105,23 +105,24 @@ public class FacultyService implements IFacultyService {
     }
 
     @Override
-    public <T> T create(T t) {
-        return null;
+    public Faculty create(Faculty faculty) {
+        return save(faculty);
     }
 
     @Override
-    public <T> T read(Long id) {
-        return null;
+    public Faculty read(Long id) {
+        return findById(id)
+                .orElseThrow(() -> new IllegalStateException("Faculty not found"));
     }
 
     @Override
-    public <T> T update(T t) {
-        return null;
+    public Faculty update(Faculty faculty) {
+        return save(faculty);
     }
 
     @Override
-    public <T> void delete(T t) {
-
+    public void delete(Long id) {
+        deleteById(id);
     }
 
 }

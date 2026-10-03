@@ -31,6 +31,10 @@ public class OrganiserFactory {
             return null;
         }
 
+        if(role == null || role.isBlank()){
+            return null;
+        }
+
         return new Organiser.Builder()
                 .setFirstName(firstName)
                 .setLastName(lastName)

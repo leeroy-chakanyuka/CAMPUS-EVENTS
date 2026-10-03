@@ -360,7 +360,7 @@ public class AuthService {
             }
             if (!organiser.isActive()) {
                 response.setSuccess(false);
-                response.setMessage("Account is disabled.");
+                response.setMessage("Account is awaiting admin approval.");
                 return response;
             }
             response.setSuccess(true);
