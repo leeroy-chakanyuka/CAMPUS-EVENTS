@@ -56,6 +56,7 @@ public class Organiser {
         this.createdAt = existing.createdAt;
         this.faculty   = existing.faculty;
         this.events    = existing.events;
+        this.password  = existing.password;
         this.active    = active;
     }
 
