@@ -128,7 +128,7 @@ public class OrganisersPanel extends JPanel {
         }
         if (currentlyActive) {
             tableModel.setValueAt("Suspended", row, 3);
-            tableModel.setValueAt("Reactivate", row, 4);
+            tableModel.setValueAt("Active", row, 4);
         } else {
             tableModel.setValueAt("Active", row, 3);
             tableModel.setValueAt("Suspend", row, 4);
@@ -160,7 +160,7 @@ public class OrganisersPanel extends JPanel {
                         organiser.getEmail(),
                         organiser.getFacultyName(),
                         organiser.isActive() ? "Active" : "Suspended",
-                        organiser.isActive() ? "Suspend" : "Reactivate"
+                        organiser.isActive() ? "Suspend" : "Active"
                 });
             }
         } catch (Exception ex) {

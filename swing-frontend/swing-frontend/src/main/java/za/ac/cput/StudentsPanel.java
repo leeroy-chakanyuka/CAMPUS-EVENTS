@@ -128,7 +128,7 @@ public class StudentsPanel extends JPanel {
         }
         if (currentlyActive) {
             tableModel.setValueAt("Suspended", row, 4);
-            tableModel.setValueAt("Reactivate", row, 5);
+            tableModel.setValueAt("Active", row, 5);
         } else {
             tableModel.setValueAt("Active", row, 4);
             tableModel.setValueAt("Suspend", row, 5);
@@ -161,7 +161,7 @@ public class StudentsPanel extends JPanel {
                         student.getStudentNumber(),
                         student.getFacultyName(),
                         student.isActive() ? "Active" : "Suspended",
-                        student.isActive() ? "Suspend" : "Reactivate"
+                        student.isActive() ? "Suspend" : "Active"
                 });
             }
         } catch (Exception ex) {
