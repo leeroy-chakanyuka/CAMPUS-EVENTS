@@ -5,6 +5,7 @@ import za.ac.cput.campus_events.domain.Event;
 import za.ac.cput.campus_events.repository.EventRepository;
 import za.ac.cput.campus_events.service.IEventService;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -14,6 +15,11 @@ public class EventService implements IEventService {
 
     public EventService(EventRepository eventRepository) {
         this.eventRepository = eventRepository;
+    }
+
+    @Override
+    public List<Event> findAll() {
+        return eventRepository.findAll();
     }
 
     @Override

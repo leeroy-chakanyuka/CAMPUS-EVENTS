@@ -14,6 +14,7 @@ import za.ac.cput.campus_events.repository.PendingRegistrationRepository;
 import java.time.LocalDateTime;
 import za.ac.cput.campus_events.service.EmailService;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -48,6 +49,11 @@ public class AdminService implements IAdminService {
     @Override
     public boolean isSystemInitialized() {
         return adminRepository.count() > 0;
+    }
+
+    @Override
+    public List<Admin> findAll() {
+        return adminRepository.findAll();
     }
 
     @Override

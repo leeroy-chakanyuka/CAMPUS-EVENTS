@@ -4,6 +4,8 @@ import org.springframework.stereotype.Service;
 import za.ac.cput.campus_events.domain.Student;
 import za.ac.cput.campus_events.repository.StudentRepository;
 
+import java.util.List;
+
 @Service
 public class StudentService implements IStudentService {
 
@@ -29,5 +31,10 @@ public class StudentService implements IStudentService {
     @Override
     public Student save(Student student) {
         return studentRepository.save(student);
+    }
+
+    @Override
+    public List<Student> findAll() {
+        return studentRepository.findAll();
     }
 }

@@ -17,6 +17,8 @@ public class EventResponseDTO {
     private Boolean open;
     private Long venueId;
     private String venueName;
+    private String facultyName;
+    private String organiserName;
     private String status;
 
     public Long getId() { return id; }
@@ -42,6 +44,12 @@ public class EventResponseDTO {
 
     public String getVenueName() { return venueName; }
     public void setVenueName(String venueName) { this.venueName = venueName; }
+
+    public String getFacultyName() { return facultyName; }
+    public void setFacultyName(String facultyName) { this.facultyName = facultyName; }
+
+    public String getOrganiserName() { return organiserName; }
+    public void setOrganiserName(String organiserName) { this.organiserName = organiserName; }
 
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
