@@ -8,6 +8,7 @@ public class LoginResponseDTO {
     private String message;
     private Long accountId;
     private String role;
+    private Boolean readOnly;
 
     public LoginResponseDTO() {}
 
@@ -26,4 +27,6 @@ public class LoginResponseDTO {
     public void setAccountId(Long accountId) { this.accountId = accountId; }
     public String getRole() { return role; }
     public void setRole(String role) { this.role = role; }
+    public Boolean getReadOnly() { return readOnly; }
+    public void setReadOnly(Boolean readOnly) { this.readOnly = readOnly; }
 }

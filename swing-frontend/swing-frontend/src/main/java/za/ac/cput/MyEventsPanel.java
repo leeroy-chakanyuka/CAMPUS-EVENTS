@@ -24,6 +24,7 @@ public class MyEventsPanel extends JPanel {
     private static final HttpClient HTTP = HttpClient.newHttpClient();
 
     private final Long organiserId;
+    private final boolean readOnly;
     private final List<EventData> events = new ArrayList<>();
     private final List<VenueResponseDTO> venues = new ArrayList<>();
 
@@ -44,11 +45,16 @@ public class MyEventsPanel extends JPanel {
     private static final Color DARK_TEXT = new Color(40, 40, 40);
 
     public MyEventsPanel() {
-        this(null);
+        this(null, false);
     }
 
     public MyEventsPanel(Long organiserId) {
+        this(organiserId, false);
+    }
+
+    public MyEventsPanel(Long organiserId, boolean readOnly) {
         this.organiserId = organiserId;
+        this.readOnly = readOnly;
         setLayout(new BorderLayout());
         setBackground(Color.WHITE);
         setBorder(new EmptyBorder(20, 20, 20, 20));
@@ -83,17 +89,22 @@ public class MyEventsPanel extends JPanel {
         JPanel header = new JPanel(new BorderLayout());
         header.setBackground(Color.WHITE);
         header.add(title, BorderLayout.WEST);
-        header.add(createButton, BorderLayout.EAST);
+        if (!readOnly) {
+            header.add(createButton, BorderLayout.EAST);
+        }
         card.add(header, BorderLayout.NORTH);
         card.add(buildTable(), BorderLayout.CENTER);
         return card;
     }
 
     private JScrollPane buildTable() {
-        String[] columns = {"Title", "Venue", "Date", "Capacity", "Status", "Edit", "Close"};
+        String[] columns = readOnly
+                ? new String[]{"Title", "Venue", "Date", "Capacity", "Status"}
+                : new String[]{"Title", "Venue", "Date", "Capacity", "Status", "Edit", "Close"};
         tableModel = new DefaultTableModel(columns, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
+                if (readOnly) return false;
                 return column == 5 || column == 6;
             }
         };
@@ -112,8 +123,10 @@ public class MyEventsPanel extends JPanel {
 
         JScrollPane scrollPane = new JScrollPane(table);
         scrollPane.getViewport().setBackground(Color.WHITE);
-        new TableButtonColumn(table, 5, row -> openForm(row));
-        new TableButtonColumn(table, 6, this::handleClose, CPUT_RED, "Closed");
+        if (!readOnly) {
+            new TableButtonColumn(table, 5, row -> openForm(row));
+            new TableButtonColumn(table, 6, this::handleClose, CPUT_RED, "Closed");
+        }
         table.getColumnModel().getColumn(4).setCellRenderer(new StatusBadge());
         return scrollPane;
     }
@@ -188,6 +201,7 @@ public class MyEventsPanel extends JPanel {
     }
 
     private void openForm(int row) {
+        if (readOnly) return;
         editingRow = row;
         JPanel form = (JPanel) cardHolder.getComponent(1);
         JLabel heading = null;
@@ -223,6 +237,7 @@ public class MyEventsPanel extends JPanel {
     }
 
     private void submitEvent() {
+        if (readOnly) return;
         if (organiserId == null) {
             showError("No organiser account is available.");
             return;
@@ -283,6 +298,7 @@ public class MyEventsPanel extends JPanel {
     }
 
     private void handleClose(int row) {
+        if (readOnly) return;
         if (organiserId == null || row < 0 || row >= events.size()) return;
         EventData event = events.get(row);
         if (!event.open) return;
@@ -336,15 +352,25 @@ public class MyEventsPanel extends JPanel {
     private void refreshTable() {
         tableModel.setRowCount(0);
         for (EventData event : events) {
-            tableModel.addRow(new Object[]{
-                    event.title,
-                    event.venueName,
-                    displayDate(event.eventDate),
-                    event.capacity,
-                    event.open ? "Open" : "Closed",
-                    "Edit",
-                    event.open ? "Close registration" : "Closed"
-            });
+            if (readOnly) {
+                tableModel.addRow(new Object[]{
+                        event.title,
+                        event.venueName,
+                        displayDate(event.eventDate),
+                        event.capacity,
+                        event.open ? "Open" : "Closed"
+                });
+            } else {
+                tableModel.addRow(new Object[]{
+                        event.title,
+                        event.venueName,
+                        displayDate(event.eventDate),
+                        event.capacity,
+                        event.open ? "Open" : "Closed",
+                        "Edit",
+                        event.open ? "Close registration" : "Closed"
+                });
+            }
         }
     }
 
