@@ -132,8 +132,8 @@ public class AdminDashboard extends JFrame {
         contentPanel.add(new FacultyPanel(adminId), "faculty");
         contentPanel.add(new StudentsPanel(adminId), "students");
         contentPanel.add(new OrganisersPanel(adminId), "organisers");
-        contentPanel.add(new EventsPanel(), "events");
-        contentPanel.add(new AdminsPanel(), "admins");
+        contentPanel.add(new EventsPanel(adminId), "events");
+        contentPanel.add(new AdminsPanel(adminId), "admins");
         contentPanel.add(new NotificationsPanel(), "notifications");
 
         return contentPanel;

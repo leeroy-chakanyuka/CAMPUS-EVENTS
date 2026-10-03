@@ -1,12 +1,32 @@
 package za.ac.cput;
 
 import javax.swing.*;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.formdev.flatlaf.FlatLightLaf;
+import za.ac.cput.DTO.AdminResponseDTO;
+import za.ac.cput.DTO.CreateAdminRequestDTO;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
+import java.net.URI;
+import java.net.URLEncoder;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
 
 public class AdminsPanel extends JPanel {
+
+    private static final String BASE_URL = "http://localhost:8080";
+    private static final ObjectMapper MAPPER = new ObjectMapper();
+    private static final HttpClient HTTP = HttpClient.newHttpClient();
+
+    private final Long adminId;
+    private final List<Long> adminIds = new ArrayList<>();
 
     private JTable table;
     private DefaultTableModel tableModel;
@@ -25,6 +45,11 @@ public class AdminsPanel extends JPanel {
     private static final int FIELD_HEIGHT = 34;
 
     public AdminsPanel() {
+        this(null);
+    }
+
+    public AdminsPanel(Long adminId) {
+        this.adminId = adminId;
         setLayout(new BorderLayout());
         setBackground(Color.WHITE);
         setBorder(new EmptyBorder(20, 20, 20, 20));
@@ -33,7 +58,7 @@ public class AdminsPanel extends JPanel {
         add(buildTable(), BorderLayout.CENTER);
         add(buildCreateForm(), BorderLayout.SOUTH);
 
-        seedRows();
+        SwingUtilities.invokeLater(this::loadAdmins);
     }
 
     private JPanel buildHeader() {
@@ -44,7 +69,15 @@ public class AdminsPanel extends JPanel {
         title.setFont(new Font("Arial", Font.BOLD, 28));
         title.setForeground(CPUT_BLUE);
 
+        JButton refreshButton = new JButton("↻ Refresh");
+        refreshButton.setBackground(CPUT_BLUE);
+        refreshButton.setForeground(Color.WHITE);
+        refreshButton.setFocusPainted(false);
+        refreshButton.setFont(new Font("Arial", Font.BOLD, 13));
+        refreshButton.addActionListener(e -> loadAdmins());
+
         header.add(title, BorderLayout.WEST);
+        header.add(refreshButton, BorderLayout.EAST);
         return header;
     }
 
@@ -80,8 +113,49 @@ public class AdminsPanel extends JPanel {
     }
 
     private void handleChangePassword(int row) {
-        // TODO: PUT /admin/change-password here - also write the JOPtionPane flow to grab the neede data and change pwd
-        JOptionPane.showMessageDialog(this, "Change password flow not built yet — placeholder click.");
+        if (row < 0 || row >= adminIds.size()) return;
+        if (adminId == null) {
+            showError("Sign in as an admin to change a password.");
+            return;
+        }
+        if (!adminId.equals(adminIds.get(row))) {
+            JOptionPane.showMessageDialog(this, "You can only change your own password.",
+                    "Not allowed", JOptionPane.INFORMATION_MESSAGE);
+            return;
+        }
+
+        JPasswordField currentField = new JPasswordField();
+        JPasswordField newField = new JPasswordField();
+        Object[] fields = {"Current password:", currentField, "New password:", newField};
+        int choice = JOptionPane.showConfirmDialog(this, fields,
+                "Change your password", JOptionPane.OK_CANCEL_OPTION);
+        if (choice != JOptionPane.OK_OPTION) {
+            return;
+        }
+        String current = new String(currentField.getPassword());
+        String fresh = new String(newField.getPassword());
+        if (current.isBlank() || fresh.isBlank()) {
+            showError("Both passwords are required.");
+            return;
+        }
+        try {
+            String query = "adminId=" + adminId
+                    + "&currentPassword=" + URLEncoder.encode(current, StandardCharsets.UTF_8)
+                    + "&newPassword=" + URLEncoder.encode(fresh, StandardCharsets.UTF_8);
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(BASE_URL + "/admin/change-password?" + query))
+                    .PUT(HttpRequest.BodyPublishers.noBody())
+                    .build();
+            HttpResponse<String> response = HTTP.send(request, HttpResponse.BodyHandlers.ofString());
+            if (response.statusCode() / 100 != 2) {
+                showError(response.body());
+                return;
+            }
+            JOptionPane.showMessageDialog(this, "Password changed.",
+                    "Success", JOptionPane.INFORMATION_MESSAGE);
+        } catch (Exception ex) {
+            showError("Could not change password: " + ex.getMessage());
+        }
     }
 
     private JPanel buildCreateForm() {
@@ -151,29 +225,89 @@ public class AdminsPanel extends JPanel {
         String first = txtFirstName.getText().trim();
         String last = txtLastName.getText().trim();
         String email = txtEmail.getText().trim();
+        String temp = new String(pwdTemp.getPassword());
 
         if (first.isEmpty() || last.isEmpty() || !email.matches("^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$")) {
             JOptionPane.showMessageDialog(this, "Enter a valid name and email.",
                     "Invalid input", JOptionPane.ERROR_MESSAGE);
             return;
         }
+        if (temp.isBlank()) {
+            JOptionPane.showMessageDialog(this, "Enter a temporary password.",
+                    "Invalid input", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        if (adminId == null) {
+            showError("Sign in as an admin to create an admin.");
+            return;
+        }
 
-        // TODO: POST /admin here
-        tableModel.addRow(new Object[]{first + " " + last, email, "Change password"});
+        CreateAdminRequestDTO dto = new CreateAdminRequestDTO();
+        dto.setFirstName(first);
+        dto.setLastName(last);
+        dto.setEmail(email);
+        dto.setPassword(temp);
+        try {
+            String json = MAPPER.writeValueAsString(dto);
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(BASE_URL + "/admin?requestingAdminId=" + adminId))
+                    .header("Content-Type", "application/json")
+                    .POST(HttpRequest.BodyPublishers.ofString(json))
+                    .build();
+            HttpResponse<String> response = HTTP.send(request, HttpResponse.BodyHandlers.ofString());
+            JsonNode body = MAPPER.readTree(response.body());
+            if (response.statusCode() / 100 != 2 || !body.path("success").asBoolean(false)) {
+                showError(body.path("message").asText(response.body()));
+                return;
+            }
+            JOptionPane.showMessageDialog(this,
+                    body.path("message").asText("Admin created.")
+                            + " They appear below once they verify.",
+                    "Success", JOptionPane.INFORMATION_MESSAGE);
+        } catch (Exception ex) {
+            showError("Could not create admin: " + ex.getMessage());
+            return;
+        }
         txtFirstName.setText("");
         txtLastName.setText("");
         txtEmail.setText("");
         pwdTemp.setText("");
+        loadAdmins();
     }
 
-    private void seedRows() {
-        // TODO: GET /admin here, response is List<AdminResponseDTO>
-        // AdminResponseDTO fields: id, firstName, lastName, email (NO the password)
-        // Column mapping: firstName+" "+lastName -> col 0, email -> col 1,
-        // "Change password" -> col 2 (static label — action only enabled for own row,
-        // check id against the currently logged-in admin's id before wiring the click)
-        tableModel.addRow(new Object[]{"You", "you@cput.ac.za", "Change password"});
+    private void loadAdmins() {
+        tableModel.setRowCount(0);
+        adminIds.clear();
+        try {
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(BASE_URL + "/admin"))
+                    .GET()
+                    .build();
+            HttpResponse<String> response = HTTP.send(request, HttpResponse.BodyHandlers.ofString());
+            if (response.statusCode() / 100 != 2) {
+                showError(response.body());
+                return;
+            }
+            List<AdminResponseDTO> admins = MAPPER.readValue(
+                    response.body(), new TypeReference<List<AdminResponseDTO>>() {});
+            for (AdminResponseDTO admin : admins) {
+                adminIds.add(admin.getId());
+                String name = (admin.getFirstName() == null ? "" : admin.getFirstName())
+                        + " " + (admin.getLastName() == null ? "" : admin.getLastName());
+                tableModel.addRow(new Object[]{name.trim(), admin.getEmail(), "Change password"});
+            }
+        } catch (Exception ex) {
+            showError("Could not load admins: " + ex.getMessage());
+        }
+        table.repaint();
     }
+
+    private void showError(String message) {
+        SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(
+                this, message == null || message.isBlank() ? "Request failed" : message,
+                "Admin request failed", JOptionPane.ERROR_MESSAGE));
+    }
+
 public static void main(String[] args) {
         try {
             UIManager.setLookAndFeel(new FlatLightLaf());
