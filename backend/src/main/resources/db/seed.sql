@@ -849,10 +849,40 @@ SELECT 'Seed', 'A ticket for Seed Event 59 was cancelled.', FALSE, DATE_SUB(NOW(
        (SELECT id FROM organiser WHERE email = 'organiser2@cput.ac.za'), 'ORGANISER'
 WHERE EXISTS (SELECT 1 FROM organiser WHERE email = 'organiser2@cput.ac.za')
   AND NOT EXISTS (SELECT 1 FROM notifications WHERE recipient_id = (SELECT id FROM organiser WHERE email = 'organiser2@cput.ac.za') AND message = 'A ticket for Seed Event 59 was cancelled.');
-
 INSERT INTO notifications (title, message, is_read, created_at, recipient_id, recipient_type)
 SELECT 'Seed', 'Seed Event 60 reached half capacity.', TRUE, DATE_SUB(NOW(), INTERVAL 0 HOUR),
        (SELECT id FROM organiser WHERE email = 'organiser2@cput.ac.za'), 'ORGANISER'
 WHERE EXISTS (SELECT 1 FROM organiser WHERE email = 'organiser2@cput.ac.za')
-  AND NOT EXISTS (SELECT 1 FROM notifications WHERE recipient_id = (SELECT id FROM organiser WHERE email = 'organiser2@cput.ac.za') AND message = 'Seed Event 60 reached half capacity.');
+  AND NOT EXISTS (SELECT 1 FROM notifications WHERE recipient_id =
+       (SELECT id FROM organiser WHERE email = 'organiser2@cput.ac.za')
+       AND message = 'Seed Event 60 reached half capacity.');
 
+-- Admin test login. e@gmail.com ships with NULL password, which NPEs login.
+-- Only fills the blank; never overwrites a real password.
+UPDATE admin SET password = 'password123' WHERE email = 'e@gmail.com' AND password IS NULL;
+
+-- Pending organiser for the approval-flow visual test. The register/verify
+-- path leaves new organisers inactive; approve via PUT /organiser/{id}/status,
+-- then the account logs in fully and receives the approval notification.
+INSERT INTO organiser (first_name, last_name, email, password, role, faculty_id, created_at, active)
+SELECT 'Pending', 'Organiser', 'pending.organiser@cput.ac.za', 'password123', 'ORGANISER',
+       (SELECT id FROM faculty WHERE name = 'Faculty of Engineering'),
+       NOW(), FALSE
+WHERE NOT EXISTS (SELECT 1 FROM organiser WHERE email = 'pending.organiser@cput.ac.za')
+  AND EXISTS (SELECT 1 FROM faculty WHERE name = 'Faculty of Engineering');
+
+-- Students for the admin StudentsPanel (suspend/reactivate) visual test.
+-- Explicit ids: student.id has no auto-increment in this schema.
+INSERT INTO student (id, first_name, last_name, email, student_number, password, faculty_id, is_verified, active)
+SELECT 1, 'Sipho', 'Nkosi', 'sipho@mycput.ac.za', '219012345', 'password123',
+       (SELECT id FROM faculty WHERE name = 'Faculty of Information & Communication Technology'),
+       TRUE, TRUE
+WHERE NOT EXISTS (SELECT 1 FROM student WHERE email = 'sipho@mycput.ac.za')
+  AND EXISTS (SELECT 1 FROM faculty WHERE name = 'Faculty of Information & Communication Technology');
+
+INSERT INTO student (id, first_name, last_name, email, student_number, password, faculty_id, is_verified, active)
+SELECT 2, 'Amahle', 'Dube', 'amahle@mycput.ac.za', '221098765', 'password123',
+       (SELECT id FROM faculty WHERE name = 'Faculty of Business and Management Sciences'),
+       TRUE, FALSE
+WHERE NOT EXISTS (SELECT 1 FROM student WHERE email = 'amahle@mycput.ac.za')
+  AND EXISTS (SELECT 1 FROM faculty WHERE name = 'Faculty of Business and Management Sciences');
