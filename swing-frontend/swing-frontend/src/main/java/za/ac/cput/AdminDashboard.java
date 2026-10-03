@@ -129,7 +129,7 @@ public class AdminDashboard extends JFrame {
         cardLayout = new CardLayout();
         contentPanel = new JPanel(cardLayout);
 
-        contentPanel.add(new FacultyPanel(), "faculty");
+        contentPanel.add(new FacultyPanel(adminId), "faculty");
         contentPanel.add(new StudentsPanel(adminId), "students");
         contentPanel.add(new OrganisersPanel(adminId), "organisers");
         contentPanel.add(new EventsPanel(), "events");
