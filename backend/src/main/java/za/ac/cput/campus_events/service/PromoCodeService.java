@@ -11,7 +11,8 @@ public class PromoCodeService implements IPromoCodeService {
     @Override
     public boolean validateForStudent(PromoCode promoCode, Student student) {
         if (promoCode == null || student == null) return false;
-        if (!promoCode.isActive() || promoCode.isExpired()) return false;
+        if (!promoCode.isValidNow()) return false;
+        if (promoCode.getTimesUsed() >= promoCode.getMaxRedemptions()) return false;
 
 
         return true;
@@ -19,11 +20,20 @@ public class PromoCodeService implements IPromoCodeService {
 
     @Override
     public double applyTo(PromoCode promoCode, Event event, double originalPrice) {
-        if (promoCode == null || !promoCode.isActive() || promoCode.isExpired()) {
+        if (promoCode == null || !promoCode.isValidNow()) {
+            return originalPrice;
+        }
+        if (promoCode.getTimesUsed() >= promoCode.getMaxRedemptions()) {
             return originalPrice;
         }
 
-        // Example: percentage discount
-        return originalPrice - (originalPrice * promoCode.getDiscountPercentage() / 100);
+        if ("FLAT".equalsIgnoreCase(promoCode.getDiscountType())) {
+            return Math.max(0, originalPrice - promoCode.getValue());
+        }
+
+        double pct = promoCode.getDiscountPercentage();
+        if (pct < 0) pct = 0;
+        if (pct > 100) pct = 100;
+        return Math.max(0, originalPrice - (originalPrice * pct / 100));
     }
 }

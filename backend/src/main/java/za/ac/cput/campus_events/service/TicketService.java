@@ -31,6 +31,19 @@ public class TicketService implements ITicketService {
 
     @Override
     public void issue(TicketRequestDTO dto, Long studentId) {
+        if (dto == null) {
+            throw new IllegalArgumentException("Ticket request is required");
+        }
+        if (studentId == null) {
+            throw new IllegalArgumentException("Student id is required");
+        }
+        if (dto.getEventId() == null) {
+            throw new IllegalArgumentException("Event id is required");
+        }
+        if (dto.getPrice() < 0) {
+            throw new IllegalArgumentException("Price cannot be negative");
+        }
+
         Student student = studentRepository.findById(studentId)
                 .orElseThrow(() -> new IllegalArgumentException("Student not found"));
 
@@ -38,26 +51,49 @@ public class TicketService implements ITicketService {
                 .orElseThrow(() -> new IllegalArgumentException("Event not found"));
 
         double finalPrice = dto.getPrice();
+        PromoCode promo = null;
 
         // Validate promo code if provided
         if (dto.getPromoCode() != null && !dto.getPromoCode().isBlank()) {
-            PromoCode promo = promoCodeRepository.findByCode(dto.getPromoCode())
+            PromoCode found = promoCodeRepository.findByCode(dto.getPromoCode().trim())
                     .orElseThrow(() -> new IllegalArgumentException("Invalid promo code"));
 
-            if (!promo.isActive() || promo.isExpired()) {
+            if (!found.isValidNow()) {
                 throw new IllegalStateException("Promo code not valid");
             }
+            if (found.getTimesUsed() >= found.getMaxRedemptions()) {
+                throw new IllegalStateException("Promo code redemption limit reached");
+            }
 
-            // Apply discount
-            finalPrice = finalPrice - (finalPrice * promo.getDiscountPercentage() / 100);
+            // Apply discount (FLAT or PERCENTAGE, clamped at zero)
+            finalPrice = applyDiscount(finalPrice, found);
+
+            // Record redemption before issuing the ticket
+            PromoCode used = new PromoCode.Builder()
+                    .copy(found)
+                    .setTimesUsed(found.getTimesUsed() + 1)
+                    .build();
+            promo = promoCodeRepository.save(used);
         }
 
         Ticket ticket = new Ticket.Builder()
                 .setEvent(event)
                 .setStudent(student)
+                .setPromoCode(promo)
                 .setPrice(finalPrice)
+                .setCreatedAt(new java.util.Date())
                 .build();
 
         ticketRepository.save(ticket);
+    }
+
+    private double applyDiscount(double originalPrice, PromoCode promo) {
+        if ("FLAT".equalsIgnoreCase(promo.getDiscountType())) {
+            return Math.max(0, originalPrice - promo.getValue());
+        }
+        double pct = promo.getDiscountPercentage();
+        if (pct < 0) pct = 0;
+        if (pct > 100) pct = 100;
+        return Math.max(0, originalPrice - (originalPrice * pct / 100));
     }
 }

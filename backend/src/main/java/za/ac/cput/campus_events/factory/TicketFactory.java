@@ -20,8 +20,10 @@ public class TicketFactory {
 
        Ticket ouTicket = new Ticket.Builder()
             .setEvent(event)
+            .setStudent(student)
             .setPromoCode(promoCode)
             .setPrice(price)
+            .setCreatedAt(new java.util.Date())
             .build();
 
         return ouTicket;

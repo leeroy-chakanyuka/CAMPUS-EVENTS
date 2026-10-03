@@ -21,6 +21,6 @@ public interface PromoCodeRepository extends JpaRepository<PromoCode, String> {
         """)
     boolean existsRedemptionByStudentIdAndPromoCodeId(
             @Param("studentId") Long studentId,
-            @Param("promoCodeId") Long promoCodeId);
+            @Param("promoCodeId") String promoCodeId);
 
 }
