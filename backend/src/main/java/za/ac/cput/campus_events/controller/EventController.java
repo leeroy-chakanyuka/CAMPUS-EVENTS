@@ -5,6 +5,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import za.ac.cput.campus_events.DTO.EventRequestDTO;
 import za.ac.cput.campus_events.DTO.EventResponseDTO;
+import za.ac.cput.campus_events.DTO.StatusUpdateRequestDTO;
 import za.ac.cput.campus_events.domain.Event;
 import za.ac.cput.campus_events.service.IEventService;
 import za.ac.cput.campus_events.service.IOrganiserService;
@@ -78,6 +79,17 @@ public class EventController {
         try {
             organiserService.closeEvent(organiserId, id);
             return ResponseEntity.ok("Registration closed");
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @PutMapping("/{id}/force-cancel")
+    public ResponseEntity<?> forceCancel(@PathVariable Long id,
+                                        @RequestBody StatusUpdateRequestDTO dto) {
+        try {
+            eventService.forceCancelEvent(id, dto.getRequestingAdminId());
+            return ResponseEntity.ok("Event cancelled");
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
