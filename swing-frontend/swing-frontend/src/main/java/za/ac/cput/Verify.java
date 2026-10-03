@@ -209,7 +209,7 @@ public class Verify extends JFrame {
                         "Success",
                         JOptionPane.INFORMATION_MESSAGE);
                 if (isAdmin) {
-                    new AdminDashboard().setVisible(true);
+                    new AdminDashboard(verifyResponse.getAccountId()).setVisible(true);
                 } else {
                     new Login().setVisible(true);
                 }
