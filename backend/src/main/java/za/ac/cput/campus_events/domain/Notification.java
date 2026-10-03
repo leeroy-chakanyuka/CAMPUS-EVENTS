@@ -14,6 +14,9 @@ public class Notification {
     @Column(nullable = false, length = 1000)
     private String message;
 
+    @Column(nullable = false)
+    private String title;
+
     @Column(name = "is_read")
     private boolean read = false;
 
@@ -30,6 +33,7 @@ public class Notification {
 
     // Getters
     public Long getId() { return id; }
+    public String getTitle() { return title; }
     public String getMessage() { return message; }
     public boolean isRead() { return read; }
     public Long getRecipientId() { return recipientId; }
@@ -38,6 +42,7 @@ public class Notification {
     public LocalDateTime getCreatedAt() { return createdAt; }
 
     // Setters
+    public void setTitle(String title) { this.title = title; }
     public void setMessage(String message) { this.message = message; }
     public void setRead(boolean read) { this.read = read; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
@@ -48,6 +53,7 @@ public class Notification {
     public String toString() {
         return "Notification{" +
                 "id=" + id +
+                ", title='" + title + '\'' +
                 ", message='" + message + '\'' +
                 ", read=" + read +
                 ", createdAt=" + createdAt +

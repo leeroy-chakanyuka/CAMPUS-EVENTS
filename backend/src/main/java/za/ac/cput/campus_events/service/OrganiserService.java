@@ -1,5 +1,7 @@
 package za.ac.cput.campus_events.service;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import za.ac.cput.campus_events.domain.Event;
 import za.ac.cput.campus_events.domain.Faculty;
@@ -15,20 +17,25 @@ import java.util.List;
 
 @Service
 public class OrganiserService implements IOrganiserService {
-    // TODO : COME BACK AND SEE IF WE CAN USE OBJECTS AND DTOS INSTEAD OF ALL THESE MULTIPLE PARAMS
+
+    private static final Logger log = LoggerFactory.getLogger(OrganiserService.class);
+
     private final OrganiserRepository organiserRepository;
     private final FacultyRepository facultyRepository;
     private final EventRepository eventRepository;
     private final VenueRepository venueRepository;
+    private final INotificationService notificationService;
 
     public OrganiserService(OrganiserRepository organiserRepository,
                             FacultyRepository facultyRepository,
                             EventRepository eventRepository,
-                            VenueRepository venueRepository) {
+                            VenueRepository venueRepository,
+                            INotificationService notificationService) {
         this.organiserRepository = organiserRepository;
         this.facultyRepository = facultyRepository;
         this.eventRepository = eventRepository;
         this.venueRepository = venueRepository;
+        this.notificationService = notificationService;
     }
 
     @Override
@@ -127,7 +134,10 @@ public class OrganiserService implements IOrganiserService {
                 .setFaculty(organiser.getFaculty())
                 .build();
 
-        return eventRepository.save(event);
+        Event saved = eventRepository.save(event);
+        notifyOrganiser(organiserId,
+                "Event '" + saved.getTitle() + "' created — registration is open.");
+        return saved;
     }
 
     @Override
@@ -161,6 +171,8 @@ public class OrganiserService implements IOrganiserService {
         }
 
         eventRepository.save(new Event(existing, false));
+        notifyOrganiser(organiserId,
+                "Registration closed for '" + existing.getTitle() + "'.");
     }
 
     @Override
@@ -174,5 +186,16 @@ public class OrganiserService implements IOrganiserService {
         Organiser existing = organiserRepository.findById(organiserId)
                 .orElseThrow(() -> new RuntimeException("Organiser not found: " + organiserId));
         organiserRepository.save(new Organiser(existing, active));
+        notifyOrganiser(organiserId, active
+                ? "Your organiser account was approved — you can now create events."
+                : "Your organiser account was suspended — event management is disabled.");
+    }
+
+    private void notifyOrganiser(Long organiserId, String message) {
+        try {
+            notificationService.sendNotification(message, organiserId, "ORGANISER");
+        } catch (RuntimeException e) {
+            log.warn("Notification for organiser {} failed: {}", organiserId, e.getMessage());
+        }
     }
 }
