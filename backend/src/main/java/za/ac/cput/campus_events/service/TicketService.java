@@ -47,8 +47,25 @@ public class TicketService implements ITicketService {
         Student student = studentRepository.findById(studentId)
                 .orElseThrow(() -> new IllegalArgumentException("Student not found"));
 
+        if (!student.isActive()) {
+            throw new IllegalStateException("Account is disabled");
+        }
+
         Event event = eventRepository.findById(dto.getEventId())
                 .orElseThrow(() -> new IllegalArgumentException("Event not found"));
+
+        if (Boolean.FALSE.equals(event.isOpen())) {
+            throw new IllegalStateException("Registration is closed for this event");
+        }
+
+        if (ticketRepository.existsByStudentIdAndEventId(studentId, event.getId())) {
+            throw new IllegalStateException("Already registered for this event");
+        }
+
+        if (event.getCapacity() != null
+                && ticketRepository.countByEventId(event.getId()) >= event.getCapacity()) {
+            throw new IllegalStateException("Event is full");
+        }
 
         double finalPrice = dto.getPrice();
         PromoCode promo = null;
