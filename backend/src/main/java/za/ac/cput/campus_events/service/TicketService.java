@@ -30,7 +30,7 @@ public class TicketService implements ITicketService {
     }
 
     @Override
-    public void issue(TicketRequestDTO dto, Long studentId) {
+    public Ticket issue(TicketRequestDTO dto, Long studentId) {
         if (dto == null) {
             throw new IllegalArgumentException("Ticket request is required");
         }
@@ -84,7 +84,34 @@ public class TicketService implements ITicketService {
                 .setCreatedAt(new java.util.Date())
                 .build();
 
-        ticketRepository.save(ticket);
+        return ticketRepository.save(ticket);
+    }
+
+    @Override
+    public java.util.List<Ticket> findByStudent(Long studentId) {
+        if (studentId == null) {
+            throw new IllegalArgumentException("Student id is required");
+        }
+        if (studentRepository.findById(studentId).isEmpty()) {
+            throw new IllegalArgumentException("Student not found");
+        }
+        return ticketRepository.findByStudentId(studentId);
+    }
+
+    @Override
+    public void cancelTicket(Long ticketId, Long studentId) {
+        if (ticketId == null) {
+            throw new IllegalArgumentException("Ticket id is required");
+        }
+        if (studentId == null) {
+            throw new IllegalArgumentException("Student id is required");
+        }
+        Ticket ticket = ticketRepository.findById(ticketId)
+                .orElseThrow(() -> new IllegalArgumentException("Ticket not found"));
+        if (ticket.getStudent() == null || !studentId.equals(ticket.getStudent().getId())) {
+            throw new IllegalArgumentException("Ticket does not belong to this student");
+        }
+        ticketRepository.delete(ticket);
     }
 
     private double applyDiscount(double originalPrice, PromoCode promo) {
