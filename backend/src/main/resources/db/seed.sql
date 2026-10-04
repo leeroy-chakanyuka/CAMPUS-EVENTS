@@ -872,7 +872,8 @@ WHERE NOT EXISTS (SELECT 1 FROM organiser WHERE email = 'pending.organiser@cput.
   AND EXISTS (SELECT 1 FROM faculty WHERE name = 'Faculty of Engineering');
 
 -- Students for the admin StudentsPanel (suspend/reactivate) visual test.
--- Explicit ids: student.id has no auto-increment in this schema.
+-- Explicit ids: keeps reruns stable whether or not the column fix below
+-- has been picked up yet.
 INSERT INTO student (id, first_name, last_name, email, student_number, password, faculty_id, is_verified, active)
 SELECT 1, 'Sipho', 'Nkosi', 'sipho@mycput.ac.za', '219012345', 'password123',
        (SELECT id FROM faculty WHERE name = 'Faculty of Information & Communication Technology'),
@@ -886,3 +887,13 @@ SELECT 2, 'Amahle', 'Dube', 'amahle@mycput.ac.za', '221098765', 'password123',
        TRUE, FALSE
 WHERE NOT EXISTS (SELECT 1 FROM student WHERE email = 'amahle@mycput.ac.za')
   AND EXISTS (SELECT 1 FROM faculty WHERE name = 'Faculty of Business and Management Sciences');
+
+-- student.id now auto-increments like every other entity (Student uses
+-- IDENTITY since T0). The FKs block MODIFY, so drop, alter, re-add with the
+-- same constraint names Hibernate generated. Re-runnable no-op on converged
+-- DBs, which converges the rest of the team on their next boot.
+ALTER TABLE notifications DROP FOREIGN KEY FKpavn8e1dwm8s42maj43hc5pjn;
+ALTER TABLE ticket DROP FOREIGN KEY FK21tryhx6fi58vsfu5mgs0x2jr;
+ALTER TABLE student MODIFY id BIGINT NOT NULL AUTO_INCREMENT;
+ALTER TABLE ticket ADD CONSTRAINT FK21tryhx6fi58vsfu5mgs0x2jr FOREIGN KEY (student_id) REFERENCES student (id);
+ALTER TABLE notifications ADD CONSTRAINT FKpavn8e1dwm8s42maj43hc5pjn FOREIGN KEY (student_id) REFERENCES student (id);
