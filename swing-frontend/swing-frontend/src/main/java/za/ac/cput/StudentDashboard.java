@@ -18,10 +18,14 @@ public class StudentDashboard extends JFrame {
 
     private JButton btnDashboard;
     private JButton btnBrowse;
+    private JButton btnTickets;
+    private JButton btnNotifications;
 
     private StudentHomePanel homePanel;
     private BrowseEventsPanel browsePanel;
     private EventDetailsPanel detailsPanel;
+    private StudentTicketsPanel ticketsPanel;
+    private StudentNotificationsPanel notificationsPanel;
 
     public StudentDashboard() {
         this(null);
@@ -57,6 +61,8 @@ public class StudentDashboard extends JFrame {
 
         btnDashboard = navButton("Dashboard");
         btnBrowse = navButton("Browse Events");
+        btnTickets = navButton("My Tickets");
+        btnNotifications = navButton("Notifications");
         JButton btnLogout = navButton("Logout");
 
         btnDashboard.addActionListener(e -> {
@@ -66,6 +72,14 @@ public class StudentDashboard extends JFrame {
         btnBrowse.addActionListener(e -> {
             showBrowse();
             setActiveNav(btnBrowse);
+        });
+        btnTickets.addActionListener(e -> {
+            cardLayout.show(contentPanel, "tickets");
+            setActiveNav(btnTickets);
+        });
+        btnNotifications.addActionListener(e -> {
+            cardLayout.show(contentPanel, "notifications");
+            setActiveNav(btnNotifications);
         });
         btnLogout.addActionListener(e -> {
             new Login().setVisible(true);
@@ -77,6 +91,10 @@ public class StudentDashboard extends JFrame {
         nav.add(btnDashboard);
         nav.add(Box.createVerticalStrut(8));
         nav.add(btnBrowse);
+        nav.add(Box.createVerticalStrut(8));
+        nav.add(btnTickets);
+        nav.add(Box.createVerticalStrut(8));
+        nav.add(btnNotifications);
         nav.add(Box.createVerticalGlue());
         nav.add(btnLogout);
         return nav;
@@ -95,7 +113,7 @@ public class StudentDashboard extends JFrame {
     }
 
     private void setActiveNav(JButton active) {
-        for (JButton b : new JButton[]{btnDashboard, btnBrowse}) {
+        for (JButton b : new JButton[]{btnDashboard, btnBrowse, btnTickets, btnNotifications}) {
             b.setBackground(b == active ? SIDEBAR_ACTIVE : SIDEBAR_BG);
         }
     }
@@ -107,10 +125,14 @@ public class StudentDashboard extends JFrame {
         homePanel = new StudentHomePanel(studentId);
         browsePanel = new BrowseEventsPanel(studentId, this::showDetails);
         detailsPanel = new EventDetailsPanel(studentId, this::showBrowse);
+        ticketsPanel = new StudentTicketsPanel(studentId);
+        notificationsPanel = new StudentNotificationsPanel(studentId);
 
         contentPanel.add(homePanel, "dashboard");
         contentPanel.add(browsePanel, "browse");
         contentPanel.add(detailsPanel, "details");
+        contentPanel.add(ticketsPanel, "tickets");
+        contentPanel.add(notificationsPanel, "notifications");
 
         return contentPanel;
     }

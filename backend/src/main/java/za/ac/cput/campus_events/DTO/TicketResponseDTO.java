@@ -11,6 +11,8 @@ public class TicketResponseDTO {
     private Double price;
     private Long eventId;
     private String eventTitle;
+    private String eventDate;
+    private String venueName;
     private Long studentId;
     private String promoCode;
     private String createdAt;
@@ -29,6 +31,12 @@ public class TicketResponseDTO {
 
     public String getEventTitle() { return eventTitle; }
     public void setEventTitle(String eventTitle) { this.eventTitle = eventTitle; }
+
+    public String getEventDate() { return eventDate; }
+    public void setEventDate(String eventDate) { this.eventDate = eventDate; }
+
+    public String getVenueName() { return venueName; }
+    public void setVenueName(String venueName) { this.venueName = venueName; }
 
     public Long getStudentId() { return studentId; }
     public void setStudentId(Long studentId) { this.studentId = studentId; }

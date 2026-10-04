@@ -1,5 +1,7 @@
 package za.ac.cput.campus_events.service;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import za.ac.cput.campus_events.DTO.TicketRequestDTO;
 import za.ac.cput.campus_events.domain.Event;
@@ -14,19 +16,24 @@ import za.ac.cput.campus_events.repository.TicketRepository;
 @Service
 public class TicketService implements ITicketService {
 
+    private static final Logger log = LoggerFactory.getLogger(TicketService.class);
+
     private final TicketRepository ticketRepository;
     private final EventRepository eventRepository;
     private final StudentRepository studentRepository;
     private final PromoCodeRepository promoCodeRepository;
+    private final INotificationService notificationService;
 
     public TicketService(TicketRepository ticketRepository,
                          EventRepository eventRepository,
                          StudentRepository studentRepository,
-                         PromoCodeRepository promoCodeRepository) {
+                         PromoCodeRepository promoCodeRepository,
+                         INotificationService notificationService) {
         this.ticketRepository = ticketRepository;
         this.eventRepository = eventRepository;
         this.studentRepository = studentRepository;
         this.promoCodeRepository = promoCodeRepository;
+        this.notificationService = notificationService;
     }
 
     @Override
@@ -101,7 +108,9 @@ public class TicketService implements ITicketService {
                 .setCreatedAt(new java.util.Date())
                 .build();
 
-        return ticketRepository.save(ticket);
+        Ticket saved = ticketRepository.save(ticket);
+        notifyStudent(studentId, "Ticket issued for '" + event.getTitle() + "'.");
+        return saved;
     }
 
     @Override
@@ -128,7 +137,17 @@ public class TicketService implements ITicketService {
         if (ticket.getStudent() == null || !studentId.equals(ticket.getStudent().getId())) {
             throw new IllegalArgumentException("Ticket does not belong to this student");
         }
+        String title = ticket.getEvent() == null ? "event" : ticket.getEvent().getTitle();
         ticketRepository.delete(ticket);
+        notifyStudent(studentId, "Ticket for '" + title + "' was cancelled.");
+    }
+
+    private void notifyStudent(Long studentId, String message) {
+        try {
+            notificationService.sendNotification(message, studentId, "STUDENT");
+        } catch (RuntimeException e) {
+            log.warn("Notification for student {} failed: {}", studentId, e.getMessage());
+        }
     }
 
     private double applyDiscount(double originalPrice, PromoCode promo) {

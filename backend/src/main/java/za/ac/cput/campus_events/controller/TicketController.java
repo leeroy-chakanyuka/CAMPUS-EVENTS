@@ -62,6 +62,11 @@ public class TicketController {
         if (ticket.getEvent() != null) {
             dto.setEventId(ticket.getEvent().getId());
             dto.setEventTitle(ticket.getEvent().getTitle());
+            dto.setEventDate(ticket.getEvent().getEventDate() == null
+                    ? null : ticket.getEvent().getEventDate().toString());
+            if (ticket.getEvent().getVenue() != null) {
+                dto.setVenueName(ticket.getEvent().getVenue().getName());
+            }
         }
         if (ticket.getStudent() != null) {
             dto.setStudentId(ticket.getStudent().getId());

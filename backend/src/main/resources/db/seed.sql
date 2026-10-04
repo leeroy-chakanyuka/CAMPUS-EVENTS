@@ -897,3 +897,20 @@ ALTER TABLE ticket DROP FOREIGN KEY FK21tryhx6fi58vsfu5mgs0x2jr;
 ALTER TABLE student MODIFY id BIGINT NOT NULL AUTO_INCREMENT;
 ALTER TABLE ticket ADD CONSTRAINT FK21tryhx6fi58vsfu5mgs0x2jr FOREIGN KEY (student_id) REFERENCES student (id);
 ALTER TABLE notifications ADD CONSTRAINT FKpavn8e1dwm8s42maj43hc5pjn FOREIGN KEY (student_id) REFERENCES student (id);
+
+-- Starter inbox so the student notifications panel shows real rows on first login.
+INSERT INTO notifications (title, message, is_read, created_at, recipient_id, recipient_type)
+SELECT 'Welcome', 'Welcome to Campus Events - browse open events and get your first ticket.', FALSE, NOW(),
+       (SELECT id FROM student WHERE email = 'sipho@mycput.ac.za'), 'STUDENT'
+WHERE EXISTS (SELECT 1 FROM student WHERE email = 'sipho@mycput.ac.za')
+  AND NOT EXISTS (SELECT 1 FROM notifications WHERE recipient_id =
+       (SELECT id FROM student WHERE email = 'sipho@mycput.ac.za')
+       AND message = 'Welcome to Campus Events - browse open events and get your first ticket.');
+
+INSERT INTO notifications (title, message, is_read, created_at, recipient_id, recipient_type)
+SELECT 'Reminder', 'Your faculty posts new events every week - check Browse Events.', FALSE, NOW(),
+       (SELECT id FROM student WHERE email = 'sipho@mycput.ac.za'), 'STUDENT'
+WHERE EXISTS (SELECT 1 FROM student WHERE email = 'sipho@mycput.ac.za')
+  AND NOT EXISTS (SELECT 1 FROM notifications WHERE recipient_id =
+       (SELECT id FROM student WHERE email = 'sipho@mycput.ac.za')
+       AND message = 'Your faculty posts new events every week - check Browse Events.');
