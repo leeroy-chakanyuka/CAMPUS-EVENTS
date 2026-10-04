@@ -141,6 +141,7 @@ public class EventController {
         dto.setEventDate(event.getEventDate() == null ? null : event.getEventDate().toString());
         dto.setCapacity(event.getCapacity());
         dto.setOpen(event.isOpen());
+        dto.setTicketsSold(event.getTickets() == null ? 0 : event.getTickets().size());
         if (event.getVenue() != null) {
             dto.setVenueId(event.getVenue().getId());
             dto.setVenueName(event.getVenue().getName());
