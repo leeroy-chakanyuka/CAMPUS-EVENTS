@@ -4,9 +4,12 @@ import za.ac.cput.campus_events.DTO.CreateAdminRequestDTO;
 import za.ac.cput.campus_events.DTO.CreateAdminResponseDTO;
 import za.ac.cput.campus_events.domain.Admin;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface IAdminService {
+
+    List<Admin> findAll();
 
     CreateAdminResponseDTO seedAdmin(CreateAdminRequestDTO request);
     // does the system have more than one admin

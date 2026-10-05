@@ -128,10 +128,16 @@ public class PromoCode {
     }
 
     public boolean isExpired() {
-        return false;
+        if (expiryDate == null) {
+            return true;
+        }
+        return LocalDate.now().isAfter(expiryDate);
     }
 
     public double getDiscountPercentage() {
+        if ("PERCENTAGE".equalsIgnoreCase(discountType)) {
+            return value;
+        }
         return 0;
     }
 

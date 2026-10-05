@@ -6,4 +6,9 @@ import za.ac.cput.campus_events.domain.Ticket;
 
 @Repository
 public interface TicketRepository extends JpaRepository<Ticket, Long> {
+    java.util.List<Ticket> findByStudentId(Long studentId);
+
+    boolean existsByStudentIdAndEventId(Long studentId, Long eventId);
+
+    long countByEventId(Long eventId);
 }

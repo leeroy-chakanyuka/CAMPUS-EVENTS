@@ -203,6 +203,20 @@ public class Login extends JFrame {
                     }
                     new OrganiserDashboard(loginResponse.getAccountId(), isReadOnly(loginResponse)).setVisible(true);
                     this.dispose();
+                } else if ("ADMIN".equalsIgnoreCase(loginResponse.getRole())) {
+                    if (loginResponse.getAccountId() == null) {
+                        JOptionPane.showMessageDialog(this, "Login succeeded but no admin account ID was returned.", "Login error", JOptionPane.ERROR_MESSAGE);
+                        return;
+                    }
+                    new AdminDashboard(loginResponse.getAccountId()).setVisible(true);
+                    this.dispose();
+                } else if ("STUDENT".equalsIgnoreCase(loginResponse.getRole())) {
+                    if (loginResponse.getAccountId() == null) {
+                        JOptionPane.showMessageDialog(this, "Login succeeded but no student account ID was returned.", "Login error", JOptionPane.ERROR_MESSAGE);
+                        return;
+                    }
+                    new StudentDashboard(loginResponse.getAccountId()).setVisible(true);
+                    this.dispose();
                 } else {
                     JOptionPane.showMessageDialog(
                             this,

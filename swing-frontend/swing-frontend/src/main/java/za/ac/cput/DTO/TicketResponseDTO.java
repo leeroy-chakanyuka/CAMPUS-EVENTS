@@ -1,10 +1,8 @@
-/**
- * TicketResponseDTO
- * Author: Faith Adams (Student #222297204)
- * Purpose: Carries ticket response data from backend to frontend.
- */
-package za.ac.cput.campus_events.DTO;
+package za.ac.cput.DTO;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class TicketResponseDTO {
     private Long id;
     private String status;

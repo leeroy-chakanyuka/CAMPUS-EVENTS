@@ -5,7 +5,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import za.ac.cput.campus_events.DTO.EventRequestDTO;
 import za.ac.cput.campus_events.DTO.EventResponseDTO;
+import za.ac.cput.campus_events.DTO.StatusUpdateRequestDTO;
 import za.ac.cput.campus_events.domain.Event;
+import za.ac.cput.campus_events.service.IEventService;
 import za.ac.cput.campus_events.service.IOrganiserService;
 
 import java.time.LocalDate;
@@ -23,9 +25,16 @@ import java.util.List;
 public class EventController {
 
     private final IOrganiserService organiserService;
+    private final IEventService eventService;
 
-    public EventController(IOrganiserService organiserService) {
+    public EventController(IOrganiserService organiserService, IEventService eventService) {
         this.organiserService = organiserService;
+        this.eventService = eventService;
+    }
+
+    @GetMapping
+    public ResponseEntity<List<EventResponseDTO>> allEvents() {
+        return ResponseEntity.ok(eventService.findAll().stream().map(this::toResponse).toList());
     }
 
     @PostMapping
@@ -70,6 +79,17 @@ public class EventController {
         try {
             organiserService.closeEvent(organiserId, id);
             return ResponseEntity.ok("Registration closed");
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @PutMapping("/{id}/force-cancel")
+    public ResponseEntity<?> forceCancel(@PathVariable Long id,
+                                        @RequestBody StatusUpdateRequestDTO dto) {
+        try {
+            eventService.forceCancelEvent(id, dto.getRequestingAdminId());
+            return ResponseEntity.ok("Event cancelled");
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
@@ -121,9 +141,16 @@ public class EventController {
         dto.setEventDate(event.getEventDate() == null ? null : event.getEventDate().toString());
         dto.setCapacity(event.getCapacity());
         dto.setOpen(event.isOpen());
+        dto.setTicketsSold(event.getTickets() == null ? 0 : event.getTickets().size());
         if (event.getVenue() != null) {
             dto.setVenueId(event.getVenue().getId());
             dto.setVenueName(event.getVenue().getName());
+        }
+        if (event.getFaculty() != null) {
+            dto.setFacultyName(event.getFaculty().getName());
+        }
+        if (event.getOrganiser() != null) {
+            dto.setOrganiserName(event.getOrganiser().getFirstName() + " " + event.getOrganiser().getLastName());
         }
         return dto;
     }

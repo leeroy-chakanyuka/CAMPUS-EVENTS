@@ -3,12 +3,30 @@ package za.ac.cput;
 
 
 import javax.swing.*;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.formdev.flatlaf.FlatLightLaf;
+import za.ac.cput.DTO.FacultyRequestDTO;
+import za.ac.cput.DTO.FacultyResponseDTO;
+import za.ac.cput.DTO.StatusUpdateRequestDTO;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.util.ArrayList;
+import java.util.List;
 
 public class FacultyPanel extends JPanel {
+
+    private static final String BASE_URL = "http://localhost:8080";
+    private static final ObjectMapper MAPPER = new ObjectMapper();
+    private static final HttpClient HTTP = HttpClient.newHttpClient();
+
+    private final Long adminId;
+    private final List<Long> facultyIds = new ArrayList<>();
 
     private JTable table;
     private DefaultTableModel tableModel;
@@ -27,6 +45,11 @@ public class FacultyPanel extends JPanel {
     private static final int FIELD_HEIGHT = 34;
 
     public FacultyPanel() {
+        this(null);
+    }
+
+    public FacultyPanel(Long adminId) {
+        this.adminId = adminId;
         setLayout(new BorderLayout());
         setBackground(Color.WHITE);
         setBorder(new EmptyBorder(20, 20, 20, 20));
@@ -35,7 +58,7 @@ public class FacultyPanel extends JPanel {
         add(buildTable(), BorderLayout.CENTER);
         add(buildCreateForm(), BorderLayout.SOUTH);
 
-        seedRows();
+        SwingUtilities.invokeLater(this::loadFaculties);
     }
 
     private JPanel buildHeader() {
@@ -46,7 +69,15 @@ public class FacultyPanel extends JPanel {
         title.setFont(new Font("Arial", Font.BOLD, 28));
         title.setForeground(CPUT_BLUE);
 
+        JButton refreshButton = new JButton("↻ Refresh");
+        refreshButton.setBackground(CPUT_BLUE);
+        refreshButton.setForeground(Color.WHITE);
+        refreshButton.setFocusPainted(false);
+        refreshButton.setFont(new Font("Arial", Font.BOLD, 13));
+        refreshButton.addActionListener(e -> loadFaculties());
+
         header.add(title, BorderLayout.WEST);
+        header.add(refreshButton, BorderLayout.EAST);
         return header;
     }
 
@@ -83,15 +114,39 @@ public class FacultyPanel extends JPanel {
     }
 
     private void handleStatusToggle(int row) {
-        // TODO: PUT /faculty/{id}/status
-        String currentStatus = tableModel.getValueAt(row, 2).toString();
-        if (currentStatus.equals("Active")) {
+        if (row < 0 || row >= facultyIds.size()) return;
+        if (adminId == null) {
+            showError("Sign in as an admin to change faculty status.");
+            return;
+        }
+        boolean currentlyActive = tableModel.getValueAt(row, 2).toString().equals("Active");
+        StatusUpdateRequestDTO dto = new StatusUpdateRequestDTO();
+        dto.setActive(!currentlyActive);
+        dto.setRequestingAdminId(adminId);
+        try {
+            String json = MAPPER.writeValueAsString(dto);
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(BASE_URL + "/faculty/" + facultyIds.get(row) + "/status"))
+                    .header("Content-Type", "application/json")
+                    .PUT(HttpRequest.BodyPublishers.ofString(json))
+                    .build();
+            HttpResponse<String> response = HTTP.send(request, HttpResponse.BodyHandlers.ofString());
+            if (response.statusCode() / 100 != 2) {
+                showError(response.body());
+                return;
+            }
+        } catch (Exception ex) {
+            showError("Could not update faculty status: " + ex.getMessage());
+            return;
+        }
+        if (currentlyActive) {
             tableModel.setValueAt("Inactive", row, 2);
-            tableModel.setValueAt("Activate", row, 3);
+            tableModel.setValueAt("Active", row, 3);
         } else {
             tableModel.setValueAt("Active", row, 2);
             tableModel.setValueAt("Deactivate", row, 3);
         }
+        table.repaint();
     }
 
     private JPanel buildCreateForm() {
@@ -162,22 +217,72 @@ public class FacultyPanel extends JPanel {
                     "Invalid input", JOptionPane.ERROR_MESSAGE);
             return;
         }
+        if (adminId == null) {
+            showError("Sign in as an admin to create a faculty.");
+            return;
+        }
 
-        // TODO: POST /faculty here
-        tableModel.addRow(new Object[]{name, email, "Active", "Deactivate"});
+        FacultyRequestDTO dto = new FacultyRequestDTO();
+        dto.setName(name);
+        dto.setContactEmail(email);
+        dto.setAdminId(adminId);
+        try {
+            String json = MAPPER.writeValueAsString(dto);
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(BASE_URL + "/faculty"))
+                    .header("Content-Type", "application/json")
+                    .POST(HttpRequest.BodyPublishers.ofString(json))
+                    .build();
+            HttpResponse<String> response = HTTP.send(request, HttpResponse.BodyHandlers.ofString());
+            if (response.statusCode() / 100 != 2) {
+                showError(response.body());
+                return;
+            }
+        } catch (Exception ex) {
+            showError("Could not create faculty: " + ex.getMessage());
+            return;
+        }
         txtName.setText("");
         txtEmail.setText("");
+        loadFaculties();
     }
 
-    private void seedRows() {
-        // TODO: GET /faculty here, response is List<FacultyResponseDTO>
-        // FacultyResponseDTO fields: id, name, contactEmail, active
-        // Column mapping: name -> col 0, contactEmail -> col 1,
-        // active ? "Active" : "Inactive" -> col 2,
-        // active ? "Deactivate" : "Activate" -> col 3
-        tableModel.addRow(new Object[]{"Faculty of ICT", "ict@cput.ac.za", "Active", "Deactivate"});
-        tableModel.addRow(new Object[]{"Faculty of Business", "business@cput.ac.za", "Inactive", "Activate"});
+    private void loadFaculties() {
+        tableModel.setRowCount(0);
+        facultyIds.clear();
+        try {
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(BASE_URL + "/faculty"))
+                    .GET()
+                    .build();
+            HttpResponse<String> response = HTTP.send(request, HttpResponse.BodyHandlers.ofString());
+            if (response.statusCode() / 100 != 2) {
+                showError(response.body());
+                return;
+            }
+            List<FacultyResponseDTO> faculties = MAPPER.readValue(
+                    response.body(), new TypeReference<List<FacultyResponseDTO>>() {});
+            for (FacultyResponseDTO faculty : faculties) {
+                facultyIds.add(faculty.getId());
+                tableModel.addRow(new Object[]{
+                        faculty.getName(),
+                        faculty.getContactEmail(),
+                        faculty.isActive() ? "Active" : "Inactive",
+                        faculty.isActive() ? "Deactivate" : "Active"
+                });
+            }
+        } catch (Exception ex) {
+            showError("Could not load faculties: " + ex.getMessage());
+        }
+        table.repaint();
     }
+
+    private void showError(String message) {
+        SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(
+                this, message == null || message.isBlank() ? "Request failed" : message,
+                "Admin request failed", JOptionPane.ERROR_MESSAGE));
+    }
+
 public static void main(String[] args) {
         try {
             UIManager.setLookAndFeel(new FlatLightLaf());

@@ -7,6 +7,8 @@ import java.awt.*;
 
 public class AdminDashboard extends JFrame {
 
+    private final Long adminId;
+
     private CardLayout cardLayout;
     private JPanel contentPanel;
 
@@ -22,6 +24,11 @@ public class AdminDashboard extends JFrame {
     private JButton btnLogout;
 
     public AdminDashboard() {
+        this(null);
+    }
+
+    public AdminDashboard(Long adminId) {
+        this.adminId = adminId;
         setTitle("Campus Events - Admin Dashboard");
         setSize(1200, 700);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -122,11 +129,11 @@ public class AdminDashboard extends JFrame {
         cardLayout = new CardLayout();
         contentPanel = new JPanel(cardLayout);
 
-        contentPanel.add(new FacultyPanel(), "faculty");
-        contentPanel.add(new StudentsPanel(), "students");
-        contentPanel.add(new OrganisersPanel(), "organisers");
-        contentPanel.add(new EventsPanel(), "events");
-        contentPanel.add(new AdminsPanel(), "admins");
+        contentPanel.add(new FacultyPanel(adminId), "faculty");
+        contentPanel.add(new StudentsPanel(adminId), "students");
+        contentPanel.add(new OrganisersPanel(adminId), "organisers");
+        contentPanel.add(new EventsPanel(adminId), "events");
+        contentPanel.add(new AdminsPanel(adminId), "admins");
         contentPanel.add(new NotificationsPanel(), "notifications");
 
         return contentPanel;

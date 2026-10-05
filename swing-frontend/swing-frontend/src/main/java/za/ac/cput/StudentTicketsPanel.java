@@ -3,9 +3,7 @@ package za.ac.cput;
 import javax.swing.*;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.formdev.flatlaf.FlatLightLaf;
-import za.ac.cput.DTO.StudentResponseDTO;
-import za.ac.cput.DTO.StatusUpdateRequestDTO;
+import za.ac.cput.DTO.TicketResponseDTO;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
@@ -16,14 +14,14 @@ import java.net.http.HttpResponse;
 import java.util.ArrayList;
 import java.util.List;
 
-public class StudentsPanel extends JPanel {
+public class StudentTicketsPanel extends JPanel {
 
     private static final String BASE_URL = "http://localhost:8080";
     private static final ObjectMapper MAPPER = new ObjectMapper();
     private static final HttpClient HTTP = HttpClient.newHttpClient();
 
-    private final Long adminId;
-    private final List<Long> studentIds = new ArrayList<>();
+    private final Long studentId;
+    private final List<Long> ticketIds = new ArrayList<>();
 
     private JTable table;
     private DefaultTableModel tableModel;
@@ -32,12 +30,8 @@ public class StudentsPanel extends JPanel {
     private static final Color LIGHT_BLUE = new Color(235, 242, 250);
     private static final Color DARK_TEXT = new Color(40, 40, 40);
 
-    public StudentsPanel() {
-        this(null);
-    }
-
-    public StudentsPanel(Long adminId) {
-        this.adminId = adminId;
+    public StudentTicketsPanel(Long studentId) {
+        this.studentId = studentId;
         setLayout(new BorderLayout());
         setBackground(Color.WHITE);
         setBorder(new EmptyBorder(20, 20, 20, 20));
@@ -45,14 +39,14 @@ public class StudentsPanel extends JPanel {
         add(buildHeader(), BorderLayout.NORTH);
         add(buildTable(), BorderLayout.CENTER);
 
-        SwingUtilities.invokeLater(this::loadStudents);
+        SwingUtilities.invokeLater(this::loadTickets);
     }
 
     private JPanel buildHeader() {
         JPanel header = new JPanel(new BorderLayout());
         header.setBackground(Color.WHITE);
 
-        JLabel title = new JLabel("Students");
+        JLabel title = new JLabel("My Tickets");
         title.setFont(new Font("Arial", Font.BOLD, 28));
         title.setForeground(CPUT_BLUE);
 
@@ -61,7 +55,7 @@ public class StudentsPanel extends JPanel {
         refreshButton.setForeground(Color.WHITE);
         refreshButton.setFocusPainted(false);
         refreshButton.setFont(new Font("Arial", Font.BOLD, 13));
-        refreshButton.addActionListener(e -> loadStudents());
+        refreshButton.addActionListener(e -> loadTickets());
 
         header.add(title, BorderLayout.WEST);
         header.add(refreshButton, BorderLayout.EAST);
@@ -69,12 +63,12 @@ public class StudentsPanel extends JPanel {
     }
 
     private JScrollPane buildTable() {
-        String[] columns = {"Name", "Email", "Student #", "Faculty", "Status", "Action"};
+        String[] columns = {"Event", "Date", "Venue", "Status", "Action"};
 
         tableModel = new DefaultTableModel(columns, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
-                return column == 5; // Action column only
+                return column == 4; // Action column only
             }
         };
 
@@ -94,28 +88,28 @@ public class StudentsPanel extends JPanel {
         JScrollPane scrollPane = new JScrollPane(table);
         scrollPane.getViewport().setBackground(Color.WHITE);
 
-        new TableButtonColumn(table, 5, this::handleStatusToggle);
-        table.getColumnModel().getColumn(4).setCellRenderer(new StatusBadge());
+        new TableButtonColumn(table, 4, this::handleCancel);
+        table.getColumnModel().getColumn(3).setCellRenderer(new StatusBadge());
 
         return scrollPane;
     }
 
-    private void handleStatusToggle(int row) {
-        if (row < 0 || row >= studentIds.size()) return;
-        if (adminId == null) {
-            showError("Sign in as an admin to change student status.");
+    private void handleCancel(int row) {
+        if (row < 0 || row >= ticketIds.size()) return;
+        if (studentId == null) {
+            showError("Sign in as a student to cancel a ticket.");
             return;
         }
-        boolean currentlyActive = tableModel.getValueAt(row, 4).toString().equals("Active");
-        StatusUpdateRequestDTO dto = new StatusUpdateRequestDTO();
-        dto.setActive(!currentlyActive);
-        dto.setRequestingAdminId(adminId);
+        int confirm = JOptionPane.showConfirmDialog(this,
+                "Cancel your ticket for '" + tableModel.getValueAt(row, 0) + "'?",
+                "Confirm cancel", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+        if (confirm != JOptionPane.YES_OPTION) {
+            return;
+        }
         try {
-            String json = MAPPER.writeValueAsString(dto);
             HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create(BASE_URL + "/student/" + studentIds.get(row) + "/status"))
-                    .header("Content-Type", "application/json")
-                    .PUT(HttpRequest.BodyPublishers.ofString(json))
+                    .uri(URI.create(BASE_URL + "/ticket/" + ticketIds.get(row) + "?studentId=" + studentId))
+                    .DELETE()
                     .build();
             HttpResponse<String> response = HTTP.send(request, HttpResponse.BodyHandlers.ofString());
             if (response.statusCode() / 100 != 2) {
@@ -123,25 +117,21 @@ public class StudentsPanel extends JPanel {
                 return;
             }
         } catch (Exception ex) {
-            showError("Could not update student status: " + ex.getMessage());
+            showError("Could not cancel ticket: " + ex.getMessage());
             return;
         }
-        if (currentlyActive) {
-            tableModel.setValueAt("Suspended", row, 4);
-            tableModel.setValueAt("Active", row, 5);
-        } else {
-            tableModel.setValueAt("Active", row, 4);
-            tableModel.setValueAt("Suspend", row, 5);
-        }
+        ticketIds.remove(row);
+        tableModel.removeRow(row);
         table.repaint();
     }
 
-    private void loadStudents() {
+    private void loadTickets() {
         tableModel.setRowCount(0);
-        studentIds.clear();
+        ticketIds.clear();
+        if (studentId == null) return;
         try {
             HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create(BASE_URL + "/student"))
+                    .uri(URI.create(BASE_URL + "/ticket/student/" + studentId))
                     .GET()
                     .build();
             HttpResponse<String> response = HTTP.send(request, HttpResponse.BodyHandlers.ofString());
@@ -149,23 +139,20 @@ public class StudentsPanel extends JPanel {
                 showError(response.body());
                 return;
             }
-            List<StudentResponseDTO> students = MAPPER.readValue(
-                    response.body(), new TypeReference<List<StudentResponseDTO>>() {});
-            for (StudentResponseDTO student : students) {
-                studentIds.add(student.getId());
-                String name = (student.getFirstName() == null ? "" : student.getFirstName())
-                        + " " + (student.getLastName() == null ? "" : student.getLastName());
+            List<TicketResponseDTO> tickets = MAPPER.readValue(
+                    response.body(), new TypeReference<List<TicketResponseDTO>>() {});
+            for (TicketResponseDTO ticket : tickets) {
+                ticketIds.add(ticket.getId());
                 tableModel.addRow(new Object[]{
-                        name.trim(),
-                        student.getEmail(),
-                        student.getStudentNumber(),
-                        student.getFacultyName(),
-                        student.isActive() ? "Active" : "Suspended",
-                        student.isActive() ? "Suspend" : "Active"
+                        ticket.getEventTitle(),
+                        BrowseEventsPanel.dateOnly(ticket.getEventDate()),
+                        ticket.getVenueName(),
+                        "Issued",
+                        "Cancel"
                 });
             }
         } catch (Exception ex) {
-            showError("Could not load students: " + ex.getMessage());
+            showError("Could not load tickets: " + ex.getMessage());
         }
         table.repaint();
     }
@@ -173,22 +160,6 @@ public class StudentsPanel extends JPanel {
     private void showError(String message) {
         SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(
                 this, message == null || message.isBlank() ? "Request failed" : message,
-                "Admin request failed", JOptionPane.ERROR_MESSAGE));
-    }
-
-public static void main(String[] args) {
-        try {
-            UIManager.setLookAndFeel(new FlatLightLaf());
-        } catch (UnsupportedLookAndFeelException e) {
-            e.printStackTrace();
-        }
-        SwingUtilities.invokeLater(() -> {
-            JFrame frame = new JFrame("StudentsPanel - standalone test");
-            frame.setSize(1200, 700);
-            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-            frame.setLocationRelativeTo(null);
-            frame.add(new StudentsPanel());
-            frame.setVisible(true);
-        });
+                "Student request failed", JOptionPane.ERROR_MESSAGE));
     }
 }
