@@ -35,7 +35,8 @@ public class CreateFirstAdmin extends JFrame {
     public CreateFirstAdmin() {
         setTitle("Campus Events : Set up your Admin account");
         setSize(960, 720);
-        setResizable(false);
+        setMinimumSize(new Dimension(780, 600));
+        setResizable(true);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
 
