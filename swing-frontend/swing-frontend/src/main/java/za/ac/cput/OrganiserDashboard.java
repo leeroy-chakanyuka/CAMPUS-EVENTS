@@ -10,11 +10,11 @@ public class OrganiserDashboard extends JFrame {
     private final Long organiserId;
     private final boolean readOnly;
 
+    private JPanel navigation;
     private CardLayout cardLayout;
     private JPanel contentPanel;
 
-    private static final Color SIDEBAR_BG = new Color(0, 51, 102);
-    private static final Color SIDEBAR_ACTIVE = new Color(0, 71, 133);
+
 
     private JButton btnDashboard;
     private JButton btnMyEvents;
@@ -33,10 +33,8 @@ public class OrganiserDashboard extends JFrame {
         this.organiserId = organiserId;
         this.readOnly = readOnly;
         setTitle("Campus Events - Organiser Dashboard");
-        setSize(1200, 700);
+        AppShell.configureWindow(this);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setLocationRelativeTo(null);
-        setResizable(false);
         setLayout(new BorderLayout());
         setWindowIcon();
 
@@ -72,11 +70,8 @@ public class OrganiserDashboard extends JFrame {
     }
 
     private JPanel buildNavigation() {
-        JPanel nav = new JPanel();
-        nav.setLayout(new BoxLayout(nav, BoxLayout.Y_AXIS));
-        nav.setPreferredSize(new Dimension(220, 700));
-        nav.setBackground(SIDEBAR_BG);
-        nav.setBorder(BorderFactory.createEmptyBorder(20, 12, 20, 12));
+        JPanel nav = AppShell.navigation("Organiser");
+        navigation = nav;
 
         btnDashboard = navButton("Dashboard");
         btnMyEvents = navButton("My Events");
@@ -102,20 +97,15 @@ public class OrganiserDashboard extends JFrame {
         return nav;
     }
 
-    private JButton navButton(String label) {
-        JButton button = new JButton(label);
-        button.setFont(new Font("Arial", Font.BOLD, 14));
-        button.setForeground(Color.WHITE);
-        button.setBackground(SIDEBAR_BG);
-        button.setFocusPainted(false);
-        button.setFocusable(false);
-        button.setBorderPainted(false);
-        button.setContentAreaFilled(true);
-        button.setHorizontalAlignment(SwingConstants.LEFT);
-        button.setAlignmentX(Component.LEFT_ALIGNMENT);
-        button.setMaximumSize(new Dimension(Integer.MAX_VALUE, 44));
-        button.setBorder(BorderFactory.createEmptyBorder(10, 14, 10, 14));
-        return button;
+    private JButton navButton(String text) {
+        String icon = switch (text) {
+            case "Dashboard" -> "home";
+            case "My Events" -> "calendar";
+            case "Notifications" -> "bell";
+            case "Logout" -> "logout";
+            default -> "grid";
+        };
+        return AppShell.navButton(text, icon);
     }
 
     private void switchTo(String cardName, JButton activeButton) {
@@ -124,14 +114,12 @@ public class OrganiserDashboard extends JFrame {
     }
 
     private void setActiveNav(JButton active) {
-        for (JButton b : new JButton[]{btnDashboard, btnMyEvents, btnNotifications}) {
-            b.setBackground(b == active ? SIDEBAR_ACTIVE : SIDEBAR_BG);
-        }
+        AppShell.setActive(navigation, active);
     }
 
     private JPanel buildContent() {
         cardLayout = new CardLayout();
-        contentPanel = new JPanel(cardLayout);
+        contentPanel = AppShell.content(cardLayout);
 
         contentPanel.add(buildDashboardPanel(), "dashboard");
         contentPanel.add(new MyEventsPanel(organiserId, readOnly), "myEvents");
