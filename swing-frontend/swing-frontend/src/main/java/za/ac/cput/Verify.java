@@ -42,7 +42,8 @@ public class Verify extends JFrame {
     private void initComponents() {
         setTitle("Campus Events - Verify your account");
         setSize(960, 720);
-        setResizable(false);
+        setMinimumSize(new Dimension(780, 600));
+        setResizable(true);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
 
