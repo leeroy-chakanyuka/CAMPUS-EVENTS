@@ -1,0 +1,38 @@
+name: Stage 1 Swing UI proof
+
+on:
+  pull_request:
+    paths:
+      - "swing-frontend/swing-frontend/**"
+      - ".github/workflows/ui-stage-1.yml"
+  workflow_dispatch:
+
+jobs:
+  build-and-capture:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+          cache-dependency-path: swing-frontend/swing-frontend/pom.xml
+      - name: Compile Swing UI and test harness
+        run: mvn --batch-mode -f swing-frontend/swing-frontend/pom.xml test-compile
+      - name: Build dependency classpath
+        run: mvn --batch-mode -q -f swing-frontend/swing-frontend/pom.xml dependency:build-classpath -Dmdep.outputFile=${{ runner.temp }}/swing-cp.txt -DincludeScope=test
+      - name: Capture real Swing screenshots under Xvfb
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq xvfb
+          CLASSPATH="swing-frontend/swing-frontend/target/test-classes:swing-frontend/swing-frontend/target/classes:$(cat ${{ runner.temp }}/swing-cp.txt)"
+          xvfb-run -a -s "-screen 0 1440x900x24" java --add-modules jdk.httpserver -cp "$CLASSPATH" za.ac.cput.Stage1Capture
+      - name: Upload evidence for stage approval
+        uses: actions/upload-artifact@v4
+        with:
+          name: campus-events-stage-1-swing-screenshots
+          path: ui-stage-1-shots/*.png
+          if-no-files-found: error
