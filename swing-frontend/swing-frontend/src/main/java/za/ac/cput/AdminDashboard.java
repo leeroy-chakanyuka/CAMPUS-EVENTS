@@ -9,11 +9,11 @@ public class AdminDashboard extends JFrame {
 
     private final Long adminId;
 
+    private JPanel navigation;
     private CardLayout cardLayout;
     private JPanel contentPanel;
 
-    private static final Color SIDEBAR_BG = new Color(0, 51, 102); // CPUT_BLUE
-    private static final Color SIDEBAR_ACTIVE = new Color(0, 71, 133);
+
 
     private JButton btnFaculty;
     private JButton btnStudents;
@@ -30,10 +30,8 @@ public class AdminDashboard extends JFrame {
     public AdminDashboard(Long adminId) {
         this.adminId = adminId;
         setTitle("Campus Events - Admin Dashboard");
-        setSize(1200, 700);
+        AppShell.configureWindow(this);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setLocationRelativeTo(null);
-        setResizable(false);
         setLayout(new BorderLayout());
         setWindowIcon();
 
@@ -56,11 +54,8 @@ public class AdminDashboard extends JFrame {
     }
 
     private JPanel buildNavigation() {
-        JPanel nav = new JPanel();
-        nav.setLayout(new BoxLayout(nav, BoxLayout.Y_AXIS));
-        nav.setPreferredSize(new Dimension(220, 700));
-        nav.setBackground(SIDEBAR_BG);
-        nav.setBorder(BorderFactory.createEmptyBorder(20, 12, 20, 12));
+        JPanel nav = AppShell.navigation("Admin");
+        navigation = nav;
 
         btnFaculty = navButton("Faculties");
         btnStudents = navButton("Students");
@@ -98,20 +93,17 @@ public class AdminDashboard extends JFrame {
         return nav;
     }
 
-    private JButton navButton(String label) {
-        JButton button = new JButton(label);
-        button.setFont(new Font("Arial", Font.BOLD, 14));
-        button.setForeground(Color.WHITE);
-        button.setBackground(SIDEBAR_BG);
-        button.setFocusPainted(false);
-        button.setFocusable(false); 
-        button.setBorderPainted(false);
-        button.setContentAreaFilled(true);
-        button.setHorizontalAlignment(SwingConstants.LEFT);
-        button.setAlignmentX(Component.LEFT_ALIGNMENT);
-        button.setMaximumSize(new Dimension(Integer.MAX_VALUE, 44)); 
-        button.setBorder(BorderFactory.createEmptyBorder(10, 14, 10, 14));
-        return button;
+    private JButton navButton(String text) {
+        String icon = switch (text) {
+            case "Faculties" -> "grid";
+            case "Students", "Organisers" -> "users";
+            case "Events" -> "calendar";
+            case "Admins" -> "shield";
+            case "Notifications" -> "bell";
+            case "Logout" -> "logout";
+            default -> "grid";
+        };
+        return AppShell.navButton(text, icon);
     }
 
     private void switchTo(String cardName, JButton activeButton) {
@@ -120,14 +112,12 @@ public class AdminDashboard extends JFrame {
     }
 
     private void setActiveNav(JButton active) {
-        for (JButton b : new JButton[]{btnFaculty, btnStudents, btnOrganisers, btnEvents, btnAdmins, btnNotifications}) {
-            b.setBackground(b == active ? SIDEBAR_ACTIVE : SIDEBAR_BG);
-        }
+        AppShell.setActive(navigation, active);
     }
 
     private JPanel buildContent() {
         cardLayout = new CardLayout();
-        contentPanel = new JPanel(cardLayout);
+        contentPanel = AppShell.content(cardLayout);
 
         contentPanel.add(new FacultyPanel(adminId), "faculty");
         contentPanel.add(new StudentsPanel(adminId), "students");
