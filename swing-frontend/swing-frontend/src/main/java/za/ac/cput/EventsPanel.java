@@ -98,6 +98,13 @@ public class EventsPanel extends JPanel {
         // static non-clickable "Cancelled" text
         new TableButtonColumn(table, 5, this::handleForceCancel, new Color(190, 30, 45), "Cancelled");
         table.getColumnModel().getColumn(4).setCellRenderer(new StatusBadge());
+        UiText.configureTable(table, 110);
+        UiText.enableMultilineColumn(table, 0, 270);
+        UiText.enableMultilineColumn(table, 1, 190);
+        UiText.enableMultilineColumn(table, 2, 165);
+        table.getColumnModel().getColumn(3).setPreferredWidth(185);
+        table.getColumnModel().getColumn(4).setPreferredWidth(110);
+        table.getColumnModel().getColumn(5).setPreferredWidth(145);
 
         return scrollPane;
     }
