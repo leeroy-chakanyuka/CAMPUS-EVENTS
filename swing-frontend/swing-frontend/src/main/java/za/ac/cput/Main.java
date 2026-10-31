@@ -20,6 +20,8 @@ public class Main {
             e.printStackTrace();
         }
 
+        UiTheme.installDefaults();
+
         SwingUtilities.invokeLater(() -> {
             boolean initialized;
             try {
