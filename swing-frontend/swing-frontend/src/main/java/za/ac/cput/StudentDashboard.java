@@ -10,11 +10,11 @@ public class StudentDashboard extends JFrame {
 
     private final Long studentId;
 
+    private JPanel navigation;
     private CardLayout cardLayout;
     private JPanel contentPanel;
 
-    private static final Color SIDEBAR_BG = new Color(0, 51, 102);
-    private static final Color SIDEBAR_ACTIVE = new Color(0, 71, 133);
+
 
     private JButton btnDashboard;
     private JButton btnBrowse;
@@ -34,10 +34,8 @@ public class StudentDashboard extends JFrame {
     public StudentDashboard(Long studentId) {
         this.studentId = studentId;
         setTitle("Campus Events - Student Dashboard");
-        setSize(1200, 700);
+        AppShell.configureWindow(this);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setLocationRelativeTo(null);
-        setResizable(false);
         setLayout(new BorderLayout());
 
         add(buildNavigation(), BorderLayout.WEST);
@@ -48,16 +46,8 @@ public class StudentDashboard extends JFrame {
     }
 
     private JPanel buildNavigation() {
-        JPanel nav = new JPanel();
-        nav.setLayout(new BoxLayout(nav, BoxLayout.Y_AXIS));
-        nav.setPreferredSize(new Dimension(220, 700));
-        nav.setBackground(SIDEBAR_BG);
-        nav.setBorder(BorderFactory.createEmptyBorder(20, 12, 20, 12));
-
-        JLabel brand = new JLabel("Campus Events");
-        brand.setFont(new Font("Arial", Font.BOLD, 16));
-        brand.setForeground(Color.WHITE);
-        brand.setAlignmentX(Component.CENTER_ALIGNMENT);
+        JPanel nav = AppShell.navigation("Student");
+        navigation = nav;
 
         btnDashboard = navButton("Dashboard");
         btnBrowse = navButton("Browse Events");
@@ -86,8 +76,6 @@ public class StudentDashboard extends JFrame {
             this.dispose();
         });
 
-        nav.add(brand);
-        nav.add(Box.createVerticalStrut(24));
         nav.add(btnDashboard);
         nav.add(Box.createVerticalStrut(8));
         nav.add(btnBrowse);
@@ -101,26 +89,24 @@ public class StudentDashboard extends JFrame {
     }
 
     private JButton navButton(String text) {
-        JButton button = new JButton(text);
-        button.setMaximumSize(new Dimension(196, 40));
-        button.setAlignmentX(Component.CENTER_ALIGNMENT);
-        button.setBackground(SIDEBAR_BG);
-        button.setForeground(Color.WHITE);
-        button.setFocusPainted(false);
-        button.setBorderPainted(false);
-        button.setFont(new Font("Arial", Font.BOLD, 14));
-        return button;
+        String icon = switch (text) {
+            case "Dashboard" -> "home";
+            case "Browse Events" -> "calendar";
+            case "My Tickets" -> "ticket";
+            case "Notifications" -> "bell";
+            case "Logout" -> "logout";
+            default -> "grid";
+        };
+        return AppShell.navButton(text, icon);
     }
 
     private void setActiveNav(JButton active) {
-        for (JButton b : new JButton[]{btnDashboard, btnBrowse, btnTickets, btnNotifications}) {
-            b.setBackground(b == active ? SIDEBAR_ACTIVE : SIDEBAR_BG);
-        }
+        AppShell.setActive(navigation, active);
     }
 
     private JPanel buildContent() {
         cardLayout = new CardLayout();
-        contentPanel = new JPanel(cardLayout);
+        contentPanel = AppShell.content(cardLayout);
 
         homePanel = new StudentHomePanel(studentId);
         browsePanel = new BrowseEventsPanel(studentId, this::showDetails);
