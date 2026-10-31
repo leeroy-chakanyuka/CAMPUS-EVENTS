@@ -60,7 +60,8 @@ public class Register extends JFrame {
         // set up the window — same size as Login
         setTitle("Campus Events - Register");
         setSize(960, 720);
-        setResizable(false);
+        setMinimumSize(new Dimension(780, 600));
+        setResizable(true);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
 
