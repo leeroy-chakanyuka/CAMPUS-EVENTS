@@ -23,10 +23,10 @@ public class StudentHomePanel extends JPanel {
 
     private final Long studentId;
 
-    private JLabel lblWelcome;
+    private JTextArea lblWelcome;
     private JLabel valUpcoming;
     private JLabel valTickets;
-    private JLabel valFaculty;
+    private JTextArea valFaculty;
 
     private static final Color CPUT_BLUE = new Color(0, 51, 102);
     private static final Color CARD_BG = new Color(235, 242, 250);
@@ -37,7 +37,7 @@ public class StudentHomePanel extends JPanel {
         setBackground(Color.WHITE);
         setBorder(new EmptyBorder(20, 20, 20, 20));
 
-        lblWelcome = new JLabel("Welcome");
+        lblWelcome = UiText.wrapping("Welcome", 2);
         lblWelcome.setFont(new Font("Arial", Font.BOLD, 28));
         lblWelcome.setForeground(CPUT_BLUE);
 
@@ -50,7 +50,7 @@ public class StudentHomePanel extends JPanel {
 
         JPanel header = new JPanel(new BorderLayout());
         header.setBackground(Color.WHITE);
-        header.add(lblWelcome, BorderLayout.WEST);
+        header.add(lblWelcome, BorderLayout.CENTER);
         header.add(refreshButton, BorderLayout.EAST);
         add(header, BorderLayout.NORTH);
 
@@ -59,7 +59,8 @@ public class StudentHomePanel extends JPanel {
         cards.setBorder(new EmptyBorder(24, 0, 0, 0));
         valUpcoming = new JLabel("—", SwingConstants.CENTER);
         valTickets = new JLabel("—", SwingConstants.CENTER);
-        valFaculty = new JLabel("—", SwingConstants.CENTER);
+        valFaculty = UiText.wrapping("—", 2);
+        valFaculty.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 17));
         cards.add(statCard("Upcoming events", valUpcoming));
         cards.add(statCard("My tickets", valTickets));
         cards.add(statCard("My faculty", valFaculty));
@@ -72,8 +73,8 @@ public class StudentHomePanel extends JPanel {
         SwingUtilities.invokeLater(this::loadStats);
     }
 
-    private JPanel statCard(String label, JLabel value) {
-        value.setFont(new Font("Arial", Font.BOLD, 26));
+    private JPanel statCard(String label, JComponent value) {
+        value.setFont(new Font("Arial", Font.BOLD, value == valFaculty ? 16 : 26));
         value.setForeground(CPUT_BLUE);
         JLabel name = new JLabel(label, SwingConstants.CENTER);
         name.setFont(new Font("Arial", Font.PLAIN, 13));
@@ -86,7 +87,14 @@ public class StudentHomePanel extends JPanel {
         return card;
     }
 
+    // Never perform HTTP operations on the Swing event dispatch thread.
     private void loadStats() {
+        Thread worker = new Thread(this::fetchStats, "campus-student-stats");
+        worker.setDaemon(true);
+        worker.start();
+    }
+
+    private void fetchStats() {
         String name = "Student";
         String faculty = "—";
         int upcoming = 0;
