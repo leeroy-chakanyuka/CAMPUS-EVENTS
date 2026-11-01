@@ -34,7 +34,8 @@ public class Login extends JFrame {
         // set up the window
         setTitle("Campus Events - Sign in");
         setSize(960, 720);
-        setResizable(false);
+        setMinimumSize(new Dimension(780, 600));
+        setResizable(true);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
 

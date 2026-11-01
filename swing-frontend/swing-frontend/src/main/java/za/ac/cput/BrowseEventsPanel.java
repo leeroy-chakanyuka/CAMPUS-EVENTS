@@ -39,8 +39,8 @@ public class BrowseEventsPanel extends JPanel {
         this.studentId = studentId;
         this.onView = onView;
         setLayout(new BorderLayout());
-        setBackground(Color.WHITE);
-        setBorder(new EmptyBorder(20, 20, 20, 20));
+        setBackground(UiTheme.CANVAS);
+        setBorder(new EmptyBorder(24, 24, 24, 24));
 
         JPanel north = new JPanel(new BorderLayout());
         north.setBackground(Color.WHITE);
@@ -48,12 +48,12 @@ public class BrowseEventsPanel extends JPanel {
         north.add(buildFilters(), BorderLayout.SOUTH);
         add(north, BorderLayout.NORTH);
 
-        grid = new JPanel(new GridLayout(0, 3, 12, 12));
-        grid.setBackground(Color.WHITE);
+        grid = new ResponsiveGridPanel(272, 16);
+        grid.setBackground(UiTheme.CANVAS);
         grid.setBorder(new EmptyBorder(12, 0, 0, 0));
 
         JScrollPane scrollPane = new JScrollPane(grid);
-        scrollPane.getViewport().setBackground(Color.WHITE);
+        scrollPane.getViewport().setBackground(UiTheme.CANVAS);
         scrollPane.getVerticalScrollBar().setUnitIncrement(24);
         add(scrollPane, BorderLayout.CENTER);
 
@@ -134,14 +134,16 @@ public class BrowseEventsPanel extends JPanel {
         info.setBackground(Color.WHITE);
         info.setBorder(new EmptyBorder(10, 12, 0, 12));
 
-        JLabel title = new JLabel(event.getTitle() == null ? "" : event.getTitle());
-        title.setFont(new Font("Arial", Font.BOLD, 14));
-        title.setForeground(DARK_TEXT);
+        JTextArea title = UiText.wrapping(event.getTitle(), 3);
+        title.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 15));
+        title.setForeground(UiTheme.INK);
+        title.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-        JLabel sub = new JLabel((event.getFacultyName() == null ? "" : event.getFacultyName())
-                + " · " + (event.getVenueName() == null ? "" : event.getVenueName()));
-        sub.setFont(new Font("Arial", Font.PLAIN, 12));
-        sub.setForeground(new Color(120, 120, 120));
+        JTextArea sub = UiText.wrapping((event.getFacultyName() == null ? "" : event.getFacultyName())
+                + " · " + (event.getVenueName() == null ? "" : event.getVenueName()), 2);
+        sub.setFont(UiTheme.small());
+        sub.setForeground(UiTheme.MUTED);
+        sub.setAlignmentX(Component.LEFT_ALIGNMENT);
 
         JLabel meta = new JLabel(dateOnly(event.getEventDate()) + " · " + spotsLeft(event));
         meta.setFont(new Font("Arial", Font.BOLD, 12));
@@ -185,10 +187,14 @@ public class BrowseEventsPanel extends JPanel {
             grid.add(eventCard(event));
         }
         if (shownEvents.isEmpty()) {
-            JLabel empty = new JLabel("No open events match.", SwingConstants.CENTER);
-            empty.setFont(new Font("Arial", Font.PLAIN, 14));
-            empty.setForeground(new Color(120, 120, 120));
-            grid.add(empty);
+            JButton reset = UiTheme.secondaryButton("Clear filters");
+            reset.addActionListener(e -> {
+                txtSearch.setText("");
+                cmbFaculty.setSelectedIndex(0);
+                applyFilter();
+            });
+            grid.add(UiComponents.emptyState("No matching events",
+                    "Try another search or clear the faculty filter.", reset));
         }
         grid.revalidate();
         grid.repaint();

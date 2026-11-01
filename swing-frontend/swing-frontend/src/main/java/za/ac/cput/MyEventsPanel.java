@@ -128,6 +128,16 @@ public class MyEventsPanel extends JPanel {
             new TableButtonColumn(table, 6, this::handleClose, CPUT_RED, "Closed");
         }
         table.getColumnModel().getColumn(4).setCellRenderer(new StatusBadge());
+        UiText.configureTable(table, 110);
+        UiText.enableMultilineColumn(table, 0, 300);
+        UiText.enableMultilineColumn(table, 1, 220);
+        table.getColumnModel().getColumn(2).setPreferredWidth(175);
+        table.getColumnModel().getColumn(3).setPreferredWidth(110);
+        table.getColumnModel().getColumn(4).setPreferredWidth(110);
+        if (!readOnly) {
+            table.getColumnModel().getColumn(5).setPreferredWidth(110);
+            table.getColumnModel().getColumn(6).setPreferredWidth(110);
+        }
         return scrollPane;
     }
 

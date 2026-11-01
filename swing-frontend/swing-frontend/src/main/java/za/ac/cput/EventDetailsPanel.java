@@ -22,10 +22,10 @@ public class EventDetailsPanel extends JPanel {
 
     private EventResponseDTO event;
 
-    private JLabel lblTitle;
-    private JLabel lblFacultyBadge;
+    private JTextArea lblTitle;
+    private JTextArea lblFacultyBadge;
     private JTextArea txtDescription;
-    private JLabel lblVenue;
+    private JTextArea lblVenue;
     private JLabel lblDate;
     private JProgressBar capacityBar;
     private JLabel lblSpots;
@@ -50,20 +50,24 @@ public class EventDetailsPanel extends JPanel {
         backButton.setFocusPainted(false);
         backButton.addActionListener(e -> { if (onBack != null) onBack.run(); });
 
-        lblTitle = new JLabel("Event");
+        lblTitle = UiText.wrapping("Event", 2);
         lblTitle.setFont(new Font("Arial", Font.BOLD, 26));
         lblTitle.setForeground(CPUT_BLUE);
 
-        lblFacultyBadge = new JLabel();
+        lblFacultyBadge = UiText.wrapping("", 2);
         lblFacultyBadge.setFont(new Font("Arial", Font.BOLD, 12));
         lblFacultyBadge.setForeground(CPUT_BLUE);
         lblFacultyBadge.setOpaque(true);
         lblFacultyBadge.setBackground(BADGE_BG);
         lblFacultyBadge.setBorder(new EmptyBorder(4, 10, 4, 10));
 
-        JPanel titleRow = new JPanel(new FlowLayout(FlowLayout.LEFT, 12, 0));
+        JPanel titleRow = new JPanel();
+        titleRow.setLayout(new BoxLayout(titleRow, BoxLayout.Y_AXIS));
         titleRow.setBackground(Color.WHITE);
+        lblTitle.setAlignmentX(Component.LEFT_ALIGNMENT);
+        lblFacultyBadge.setAlignmentX(Component.LEFT_ALIGNMENT);
         titleRow.add(lblTitle);
+        titleRow.add(Box.createVerticalStrut(6));
         titleRow.add(lblFacultyBadge);
 
         top.add(backButton, BorderLayout.WEST);
@@ -82,7 +86,7 @@ public class EventDetailsPanel extends JPanel {
         txtDescription.setFont(new Font("Arial", Font.PLAIN, 14));
         txtDescription.setBackground(Color.WHITE);
 
-        lblVenue = new JLabel();
+        lblVenue = UiText.wrapping("", 2);
         lblDate = new JLabel();
         lblVenue.setFont(new Font("Arial", Font.PLAIN, 14));
         lblDate.setFont(new Font("Arial", Font.PLAIN, 14));
@@ -102,7 +106,10 @@ public class EventDetailsPanel extends JPanel {
         btnTicket.setFont(new Font("Arial", Font.BOLD, 14));
         btnTicket.addActionListener(e -> handleGetTicket());
 
-        body.add(new JScrollPane(txtDescription));
+        JScrollPane descriptionScroll = new JScrollPane(txtDescription);
+        descriptionScroll.setAlignmentX(Component.LEFT_ALIGNMENT);
+        descriptionScroll.setMaximumSize(new Dimension(Integer.MAX_VALUE, 145));
+        body.add(descriptionScroll);
         body.add(Box.createVerticalStrut(12));
         body.add(lblVenue);
         body.add(Box.createVerticalStrut(6));
