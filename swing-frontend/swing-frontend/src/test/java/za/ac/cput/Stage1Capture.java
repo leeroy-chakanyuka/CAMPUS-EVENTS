@@ -66,11 +66,48 @@ public final class Stage1Capture {
             holder[0] = frame;
         });
         // Allow the application to read fixture data through its normal HTTP code path.
-        Thread.sleep(1300);
+        // Wait for the actual HTTP-backed event cards; don't capture loading placeholders.
+        long deadline = System.currentTimeMillis() + 12000;
+        while (System.currentTimeMillis() < deadline) {
+            final int[] loaded = {0};
+            SwingUtilities.invokeAndWait(() -> loaded[0] = countButtons(holder[0], "View event"));
+            if (loaded[0] >= 4) break;
+            Thread.sleep(100);
+        }
+        final int[] cardCount = {0};
+        SwingUtilities.invokeAndWait(() -> cardCount[0] = countButtons(holder[0], "View event"));
+        if (cardCount[0] < 4) throw new IllegalStateException("Browse did not render four fixture events");
         capture(holder[0], 1200, 700, "stage-1-student-browse-1200.png");
         capture(holder[0], 960, 720, "stage-1-student-browse-960.png");
+        SwingUtilities.invokeAndWait(() -> {
+            JTextField field = findSearch(holder[0]);
+            if (field == null) throw new IllegalStateException("Accessible search input missing");
+            field.setText("unmatched event query");
+        });
+        capture(holder[0], 960, 720, "stage-2-student-empty-960.png");
         SwingUtilities.invokeAndWait(holder[0]::dispose);
         mock.stop(0);
+    }
+
+    private static int countButtons(Container root, String label) {
+        int count = 0;
+        for (Component child : root.getComponents()) {
+            if (child instanceof JButton button && label.equals(button.getText())) count++;
+            if (child instanceof Container nested) count += countButtons(nested, label);
+        }
+        return count;
+    }
+
+    private static JTextField findSearch(Container root) {
+        for (Component child : root.getComponents()) {
+            if (child instanceof JTextField field
+                    && "Search campus events".equals(field.getAccessibleContext().getAccessibleName())) return field;
+            if (child instanceof Container nested) {
+                JTextField candidate = findSearch(nested);
+                if (candidate != null) return candidate;
+            }
+        }
+        return null;
     }
 
     private static void capture(JFrame frame, int width, int height, String filename) throws Exception {
